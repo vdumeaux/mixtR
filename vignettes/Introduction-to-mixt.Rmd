@@ -1,0 +1,330 @@
+---
+title: "Introduction to mixt"
+author: "Vanessa Dumeaux"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The mixt package (Matched Interactions across Tissues) contains the computational 
+and statistical methods for identifying and exploring associations between sets
+of genes or molecular processes across tissues.  
+
+The mixt analysis requires gene expression profiles of two matched tissues and 
+is based on two core functions:
+- `sig.ranksum` a function that maps samples to a linear ordering based on 
+expression of a set of genes of interest
+- `stat.ranksum` a function that derives estimates of significance for 
+association between gene sets of interest across tissues.
+
+The mixt package also offers ad-hoc plotting functions (`cohort_heatmap`, 
+`cohort_scatterplot`, `cohort_boxplot`).
+
+If the user wants to build a web application to explore/disseminate the results, 
+the outputs should be saved in the `/data` folder of the R package as described
+below. Instructions to build the web application are described in the MIxT web
+application vignette.
+
+## 1. Input data format 
+
+Here is the example of gene expression profiles from microdissected epithelium 
+and stroma from non-inflammatory invasive breast tumors from boersma et al.
+```{r}
+files= c("dat.RData", "moduleColors.RData")
+dataDir <- 'https://rawgit.com/vdumeaux/mixtData/master/data/'
+files.dir=paste0(dataDir,files)
+
+for(i in 1:length(files)){
+ load(url(files.dir[i]))
+}
+```
+
+Expression and clinical data from matched tissues are contained in a list named `dat`. Each object of the list must include the following objects:
+* `exprs` an expression matrix with m genes in rows and n patients in columns. 
+Rownames of `exprs` are the same gene identifiers as the one used to define gene sets.
+* `cohorts` list of patients subgroups. If you have only one name, the vector
+should still be present
+* `clinical` (optional) a clinical data frame with n patients in rows and 
+clincal variables in columns. Categorical variables should be character or 
+factors. Continuous variables should be numeric.
+* `clinical.colors` (optional) a clinical data frame with n patients in rows and
+clincal variables in columns coded by discrete or continuous color-coding. 
+We recommend the colorspace R package that provides perceptually-based color 
+palettes for coding categorical data (qualitative palettes) and numerical 
+variables (sequential and diverging palettes). 
+
+```{r}
+str(dat)
+```
+
+`moduleColors` is a list of length 2: each object is a named vector of gene set 
+appartenance for each tissue. In our example, each gene is part of a module 
+grouping strongly co-expressed genes together. It could be groups of genes 
+involved in different pathways/molecular processes.
+```{r}
+str(moduleColors)
+```
+
+If you want to build the mixt web application all data should be formatted as 
+decribed earlier and saved in the data directory of the mixt package. 
+Both objects should be called `dat` and `moduleColors`. You then need to 
+overwrite the data examples already in this folder using: 
+
+```{r, eval=FALSE}
+devtools::use_data(dat, overwrite = TRUE)
+devtools::use_data(moduleColors, overwrite = TRUE)
+```
+
+## 2. Patient linear ordering and region of independence
+ 
+`sig.ranksum()` allows you to map 𝑛 samples to a linear ordering based on
+expression of 𝑘 genes within a given gene se
+
+If you know the directionality of gene expression, the gene set of interest can
+be split between the `up` and `dn` genes. 
+If you do not know the directionality of gene expression, all genes in the gene
+set are listed in the `ns`. In this case, genes will be partitioned into two 
+groups around myeloids using correlation as the distance metric.
+
+The patient ordering is then partition in three categories (high, mid, low) 
+following a random sampling procedure (n =10,000). By default, the region of 
+independence (ROI) is determined by the 0.025 and 0.975 percentile point of 
+the distribution of random patient ranks (middle.range = 0.95).Both `n` and 
+`middle.range` can be set differently.
+
+```{r}
+library(mixt)
+
+gene.sets <- lapply(moduleColors, function(x.moduleColors){
+  split(names(x.moduleColors), factor(x.moduleColors))
+})
+str(gene.sets)
+```
+```{r, eval=FALSE}
+## compute ranksum for each gene sets in each tissue
+bresat <- list()
+
+bresat$epi <- lapply(gene.sets$epi, function (mod){
+    sig.ranksum (x.dat = dat$epi, 
+                 ns = which(rownames(dat$epi$exprs) %in% mod),
+                 n=10000, mc.cores = 2)
+  
+bresat$stroma <- lapply(gene.sets$stroma, function (mod){
+    sig.ranksum (x.dat = dat$stroma, 
+                 ns = which(rownames(dat$stroma$exprs) %in% mod),
+                 n=10000, mc.cores = 2)
+```
+```{r, echo=FALSE, eval=FALSE}
+save(bresat, file = "../mixtData/data/bresat.RData")
+```
+```{r, echo=FALSE}
+load(url("https://rawgit.com/vdumeaux/mixtData/master/data/bresat.RData"))
+```
+```{r}
+names(bresat$epi)
+str(bresat$epi$blue)
+```
+Again, for the web application data must be saved in the data folder of the 
+mixt package
+```{r, eval=FALSE}
+devtools::use_data(bresat, overwrite = TRUE)
+```
+
+You can plot heatmap of a given gene set expressed in a given tissue and 
+reordered by the output of sig.ranksum().
+```{r, fig.show='hold', fig.height=5, fig.width=4} 
+cohort_heatmap(mixt.dat = dat, mixt.ranksum = bresat, tissue = "epi", 
+               module = "darkgrey", cohort.name = "all", cl.height = 3)
+```
+
+## 3. Functional enrichment
+The MSigDB database from the Broad institute provides multiple collections of
+gene sets that can be used to functionally annotate the transcriptional modules.
+
+MSigDB cannot be accessed without a free registration, so the first things
+you'll need to do is download the .gmt files using the MSigDB page.
+`read.gmt.msigdb()` will import your .gmt files in your working
+environment as follow
+
+```{r, eval=FALSE}
+msigdb.files <- c("c1.all", "h.all", "c2.cp", "c2.cgp", "c5.all", "c6.all",
+"c7.all")
+
+msigdb <- list()
+
+msigdb <- lapply(msigdb.files, function(p) {
+  input.file <- file.path("../extdata", paste0(p, ".v5.2.symbols.gmt"))
+  ret <-  read.gmt.msigdb(input.file)
+  return(ret)
+})
+names(msigdb) <- msigdb.files
+```
+
+We choose to use the hallmark (h) and curated (c2) gene set collections. 
+```{r, eval=FALSE}
+sig<-list()
+
+sig$all.sig<-c(msigdb$h.all, msigdb$c2.cp, msigdb$c2.cgp)
+
+sig$set<-c(rep("h", length(msigdb$h.all)), 
+           rep("c2.cp", length(msigdb$c2.cp)),
+           rep("c2.cgp", length(msigdb$c2.cgp)))
+
+msigdb.enrichment <- list()
+msigdb.enrichment$epi<- functional.enrichment(mixt.ranksum = bresat,
+                                              tissue="epi",
+                                              cohort.name = "ern"
+                                              functional.groups = sig,
+                                              p.adjust.method = "BH",
+                                              mc.cores=2)
+
+msigdb.enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
+                                                 tissue="stroma",
+                                                 cohort.name = "ern"
+                                                 functional.groups = sig,
+                                                 p.adjust.method = "BH",
+                                                 mc.cores=2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+save(msigdb.enrichment, file = "../mixtData/data/msigdb.enrichment.RData")
+```
+
+```{r, echo=FALSE}
+load(url("https://rawgit.com/vdumeaux/mixtData/master/data/msigdb.enrichment.RData"))
+```
+  
+Again, for the web application data must be saved in the data folder of
+the mixt package
+```{r, eval=FALSE}
+devtools::use_data(msigdb.enrichment, overwrite = TRUE)
+```
+
+
+```{r}
+library(plyr)
+
+tissue.names<-c("epi", "stroma")
+set<-levels(factor(msigdb.enrichment$epi$turquoise$results$sig.set))
+
+results<-list()
+for (tissue in tissue.names){
+results[[tissue]]<-lapply(msigdb.enrichment[[tissue]], function(x) x$results)
+}
+
+msig.results<-list()
+
+msig.results<-sapply(tissue.names, function(tissue) {
+  ret <- lapply(names(results[[tissue]]), function(mod) {
+    res<-do.call(rbind, lapply(set, function(s){
+      x<-results[[tissue]][[mod]][results[[tissue]][[mod]]$sig.set==s,]
+      x<-cbind(data.frame(name=rownames(x)), x)
+      top.5<-x[order(as.numeric(as.character(x$updn.pval)), decreasing=F),][1:5,]}))
+    })
+  names(ret)<-names(results[[tissue]])
+  return(ret)
+  }, simplify=F)
+
+epi.msig<-ldply(msig.results$epi)
+stroma.msig<-ldply(msig.results$stroma)
+knitr::kable(epi.msig[1:6,])
+knitr::kable(stroma.msig[1:6,])
+```
+
+```{r, eval=FALSE, echo=FALSE}
+write.table(epi.msig, file = "epi.msig.txt", sep="\t", col.names = T)
+write.table(stroma.msig, file = "stroma.msig.txt", sep="\t", col.names = T)
+```
+
+## 4. Association between gene sets and clinical variables
+Using ranksums to capture module expression, we can ask how gene sets/modules 
+in each tissue are differentially expressed according to patient’s 
+clinicopathological variables. The type of the clinicopathological attribute 
+(categorical or continuous) determines the underlying statistical test. 
+Pearson correlation (Student asymptotic p-value) is used to test association 
+between between a given module and continuous patient attributes (eg. age). 
+Analysis of Variance (ANOVA) is used to test association between a given module
+and categorical patient attributes (eg. ER status). 
+
+```{r}
+epi.clinical.assoc.ern <- clinical.ranksum(mixt.dat = dat, 
+                                           mixt.ranksum = bresat, 
+                                           tissue="epi", cohort="ern")
+knitr::kable(epi.clinical.assoc.ern[, 1:6])
+
+stroma.clinical.assoc.ern <- clinical.ranksum(mixt.dat = dat, 
+                                              mixt.ranksum = bresat,
+                                              tissue="stroma", cohort="ern")
+knitr::kable(stroma.clinical.assoc.ern[, 1:6])
+```
+This output is used by the D3 Javascript library (http://d3js.org) to build 
+interactive visualization in the mixt web application.
+
+## 5. Investigating gene overlap between gene sets across tissues
+Fisher exact test can be used to test the significance of gene overlap between 
+modules. P-values are adjusted for multiple testing using the false discovery 
+rate of (Benjamini and Hochberg, 1995). 
+
+```{r}
+gene.set.overlap <-  WGCNA::overlapTable(moduleColors[[1]], moduleColors[[2]])
+str(gene.set.overlap)
+knitr::kable(gene.set.overlap$pTable[1:10, 1:8])
+```
+
+This output is used by the D3 Javascript library (http://d3js.org) to build 
+interactive visualization in the mixt web application.  
+  
+## 6. Matched Interactions Across Tissues
+Interactions between gene sets/modules across tissues are identified using a 
+random permutation approach based on the Pearson correlation between ranksums of
+gene expression in gene sets/modules across tissues. This is run independently 
+within each patient cohort.  
+
+```{r, eval=FALSE}
+perm.cor.p <- stat.ranksum (mixt.ranksum = bresat, nRuns = 10000, mc.cores = 2)
+```
+```{r, echo=FALSE, eval=FALSE}
+save(perm.cor.p, file="../mixtData/data/perm.cor.p.RData")
+```
+```{r, echo=FALSE}
+load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm.cor.p.RData")))
+```
+```{r}
+str(perm.cor.p)
+head(perm.cor.p$all)
+```
+```{r, eval=FALSE}
+devtools::use_data(perm.cor.p, overwrite = TRUE)
+```
+Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2 
+(`stroma`) are in column.
+For example, the blue module in epi is associated with the greenyellow module 
+in stroma. You can examine this association with different plots
+```{r, fig.show='hold', cache=TRUE, fig.height=4, fig.width=4}
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm.cor.p, 
+                   x.tissue = "epi", x.module = "darkgrey", 
+                   y.tissue = "stroma", y.module = "grey60", 
+                   cohort.name = "ern")
+```
+
+```{r, fig.show='hold',fig.height=5, fig.width=4} 
+cohort_heatmap(mixt.dat = dat, mixt.ranksum = bresat, tissue = "stroma", 
+               module = "grey60", cohort.name = "ern", cl.height = 3)
+```
+```{r, fig.show='hold', fig.height=5, fig.width=4, cache=TRUE} 
+cohort_heatmap(mixt.dat = dat, mixt.ranksum = bresat, tissue = "epi", 
+               module = "darkgrey", cohort.name = "ern", cl.height = 3, 
+               orderByTissue = "stroma", orderByModule = "grey60")
+
+```
+
+```{r, fig.show='hold', fig.height=5, fig.width=4}
+cohort_boxplot(mixt.ranksum = bresat, tissue = "epi", module = "darkgrey", 
+               cohort.name = "ern",
+               orderByTissue = "stroma", orderByModule = "grey60")
+```
+
+

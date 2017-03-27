@@ -1,0 +1,6 @@
+packrat/*
+.Rproj.user
+inst/doc
+mixt.Rproj
+.Rhistory
+.Rbuildignore

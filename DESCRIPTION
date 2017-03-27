@@ -1,0 +1,38 @@
+Package: mixt
+Type: Package
+Title: Matched Interaction across Tissues (MIxT) data analysis
+Description: The Matched Interaction Across Tissues (MIxT) is a system designed
+    for exploring and comparing transcriptional profiles from two matched tissues
+    across individuals.
+Version: 0.99.0
+Authors@R: c(
+    person("Vanessa", "Dumeaux", , "vanessadumeaux@gmail.com", c("aut", "cre")),
+    person("Bjorn", "Fjukstad", , "bjorn@cs.uit.no", role = "aut")
+    )
+URL: https://github.com/vdumeaux/mixt
+BugReports: https://github.com/vdumeaux/mixt/issues
+Depends: R (>= 3.3)
+biocViews: Software, SystemsBiology, MultipleComparison, Visualization, DimensionReduction
+Imports:
+    stats,
+    utils,
+    parallel,
+    graphics,
+    matrixStats,
+    cluster,
+    devtools,
+    colorspace,
+    grDevices,
+    gridBase,
+    grid
+Suggests:
+    knitr,
+    rmarkdown,
+    WGCNA,
+    ggplot2,
+    plyr
+VignetteBuilder: knitr
+LazyData: TRUE
+License: Artistic-2.0
+RoxygenNote: 6.0.1
+Encoding: UTF-8
