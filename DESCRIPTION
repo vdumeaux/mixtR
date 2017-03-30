@@ -1,4 +1,4 @@
-Package: mixt
+Package: mixtR
 Type: Package
 Title: Matched Interaction across Tissues (MIxT) data analysis
 Description: The Matched Interaction Across Tissues (MIxT) is a system designed
