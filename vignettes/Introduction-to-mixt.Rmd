@@ -365,17 +365,17 @@ gene expression in gene sets/modules across tissues. This is run independently
 within each patient cohort.  
 
 ```{r, eval=FALSE}
-perm.cor.p <- stat.ranksum (mixt.ranksum = bresat, nRuns = 10000, mc.cores = 2)
+perm_cor_p <- stat.ranksum (mixt.ranksum = bresat, nRuns = 10000, mc.cores = 2)
 ```
 ```{r, echo=FALSE, eval=FALSE}
-save(perm.cor.p, file="../mixtData/data/perm_cor_p.RData")
+save(perm_cor_p, file="../mixtData/data/perm_cor_p.RData")
 ```
 ```{r, echo=FALSE}
 load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
 ```
 ```{r}
-str(perm.cor.p)
-head(perm.cor.p$all)
+str(perm_cor_p)
+head(perm_cor_p$all)
 ```
 ```{r, eval=FALSE}
 devtools::use_data(perm_cor_p, overwrite = TRUE)
@@ -385,7 +385,7 @@ Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2
 For example, the blue module in epi is associated with the greenyellow module 
 in stroma. You can examine this association with different plots
 ```{r, fig.show='hold', cache=TRUE, fig.height=4, fig.width=4}
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm.cor.p, 
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
                    x.tissue = "epi", x.module = "darkgrey", 
                    y.tissue = "stroma", y.module = "grey60", 
                    cohort.name = "ern")
