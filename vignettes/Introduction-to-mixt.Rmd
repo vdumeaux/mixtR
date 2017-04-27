@@ -62,7 +62,7 @@ str(dat)
 
 `moduleColors` is a list of length 2: each object is a named vector of gene set 
 appartenance for each tissue. In our example, each gene is part of a module 
-grouping strongly co-expressed genes together. It could be groups of genes 
+grouping strongly co-expressed genes together as computed by WGCNA R package. It could be groups of genes 
 involved in different pathways/molecular processes.
 ```{r}
 str(moduleColors)
@@ -76,6 +76,16 @@ overwrite the data examples already in this folder using:
 ```{r, eval=FALSE}
 devtools::use_data(dat, overwrite = TRUE)
 devtools::use_data(moduleColors, overwrite = TRUE)
+```
+
+You can import the top node and edges for each netwrok that you can vizualize in Cytoscape or in the mixt web application
+```{r}
+load(url("https://rawgit.com/vdumeaux/mixtData/master/data/TOM_net.RData"))
+str(TOM_net)
+```
+
+```{r, eval=FALSE}
+devtools::use_data(TOM_net, overwrite = TRUE)
 ```
 
 ## 2. Patient linear ordering and region of independence
@@ -145,7 +155,9 @@ The MSigDB database from the Broad institute provides multiple collections of
 gene sets that can be used to functionally annotate the transcriptional modules.
 
 MSigDB cannot be accessed without a free registration, so the first things
-you'll need to do is download the .gmt files using the MSigDB page.
+you'll need to do is download the .gmt files using the MSigDB page and save it
+in a folder within yoru working directory named `extdata` for example.
+
 `read.gmt.msigdb()` will import your .gmt files in your working
 environment as follow
 
@@ -156,7 +168,7 @@ msigdb.files <- c("c1.all", "h.all", "c2.cp", "c2.cgp", "c5.all", "c6.all",
 msigdb <- list()
 
 msigdb <- lapply(msigdb.files, function(p) {
-  input.file <- file.path("../extdata", paste0(p, ".v5.2.symbols.gmt"))
+  input.file <- file.path("extdata", paste0(p, ".v5.2.symbols.gmt"))
   ret <-  read.gmt.msigdb(input.file)
   return(ret)
 })
@@ -173,15 +185,15 @@ sig$set<-c(rep("h", length(msigdb$h.all)),
            rep("c2.cp", length(msigdb$c2.cp)),
            rep("c2.cgp", length(msigdb$c2.cgp)))
 
-msigdb.enrichment <- list()
-msigdb.enrichment$epi<- functional.enrichment(mixt.ranksum = bresat,
+msigdb_enrichment <- list()
+msigdb_enrichment$epi<- functional.enrichment(mixt.ranksum = bresat,
                                               tissue="epi",
                                               cohort.name = "ern"
                                               functional.groups = sig,
                                               p.adjust.method = "BH",
                                               mc.cores=2)
 
-msigdb.enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
+msigdb_enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
                                                  tissue="stroma",
                                                  cohort.name = "ern"
                                                  functional.groups = sig,
@@ -190,17 +202,17 @@ msigdb.enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(msigdb.enrichment, file = "../mixtData/data/msigdb.enrichment.RData")
+save(msigdb_enrichment, file = "../mixtData/data/msigdb_enrichment.RData")
 ```
 
 ```{r, echo=FALSE}
-load(url("https://rawgit.com/vdumeaux/mixtData/master/data/msigdb.enrichment.RData"))
+load(url("https://rawgit.com/vdumeaux/mixtData/master/data/msigdb_enrichment.RData"))
 ```
   
 Again, for the web application data must be saved in the data folder of
 the mixt package
 ```{r, eval=FALSE}
-devtools::use_data(msigdb.enrichment, overwrite = TRUE)
+devtools::use_data(msigdb_enrichment, overwrite = TRUE)
 ```
 
 
@@ -208,11 +220,11 @@ devtools::use_data(msigdb.enrichment, overwrite = TRUE)
 library(plyr)
 
 tissue.names<-c("epi", "stroma")
-set<-levels(factor(msigdb.enrichment$epi$turquoise$results$sig.set))
+set<-levels(factor(msigdb_enrichment$epi$turquoise$results$sig.set))
 
 results<-list()
 for (tissue in tissue.names){
-results[[tissue]]<-lapply(msigdb.enrichment[[tissue]], function(x) x$results)
+results[[tissue]]<-lapply(msigdb_enrichment[[tissue]], function(x) x$results)
 }
 
 msig.results<-list()
@@ -239,7 +251,76 @@ write.table(epi.msig, file = "epi.msig.txt", sep="\t", col.names = T)
 write.table(stroma.msig, file = "stroma.msig.txt", sep="\t", col.names = T)
 ```
 
-## 4. Association between gene sets and clinical variables
+We also annotate gene sets/modules based on gene ontology (GO) enrichment, 
+for example  using the R topGO package.
+```{r, eval=FALSE}
+library(topGO)
+bckg.genes <- rownames(dat[[1]]$exprs) 
+xx <- annFUN.org("BP", mapping = "org.Hs.eg.db", ID = "symbol")
+head(xx)
+xx <- unique(unlist(xx))
+xx<-xx[xx %in% bckg.genes]
+
+goterms <- NULL
+
+goterms <- lapply(tissue.names, function (tissue){
+  
+  ret <- lapply(names(gene.sets[[tissue]]), function(mod) {
+  gene.list <- gene.sets[[tissue]][[mod]]
+  gene.list.2 <- ifelse(xx %in% gene.list, 1, 0)
+  gene.list.2 <- factor(gene.list.2)
+  names(gene.list.2) <- xx
+    
+  GO.genes <- new("topGOdata",
+                    ontology = "BP",
+                    allGenes = gene.list.2,
+                    nodeSize = 5,
+                    annot = annFUN.org, 
+                    mapping = "org.Hs.eg.db",
+                    ID = "symbol")
+    
+  resultFisher <- runTest(GO.genes, algorithm = "classic", 
+                            statistic = "fisher")
+    
+  weight01Fisher <- runTest(GO.genes, statistic = "fisher")
+    
+  allRes <- GenTable(GO.genes, classicFisher = resultFisher, 
+                      weight01Fisher= weight01Fisher, 
+                      orderBy = "weight01Fisher", 
+                      topNodes=length(usedGO(GO.genes))) 
+  allRes <- subset(allRes, classicFisher != "1.00000")
+    
+  gt <- genesInTerm(GO.genes, allRes$GO.ID)
+  mod.genes <- gene.sets[[tissue]][[mod]]
+  common<-lapply(gt, function(sig) intersect(mod.genes, sig))
+    
+  results <- list(GO.table = allRes,
+              common = common)
+
+  return(results)
+})
+  names(ret) <- names(gene.sets[[tissue]])
+  return(ret)
+})
+names(goterms) <- tissue.names
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+save(goterms, file = "../mixtData/data/goterms.RData")
+```
+
+```{r, echo=FALSE}
+load(url("https://rawgit.com/vdumeaux/mixtData/master/data/goterms.RData"))
+```
+  
+Again, for the web application data must be saved in the data folder of
+the mixt package
+```{r, eval=FALSE}
+devtools::use_data(goterms, overwrite = TRUE)
+```
+
+# 4. Association between gene sets and clinical variables
 Using ranksums to capture module expression, we can ask how gene sets/modules 
 in each tissue are differentially expressed according to patient’s 
 clinicopathological variables. The type of the clinicopathological attribute 
@@ -287,17 +368,17 @@ within each patient cohort.
 perm.cor.p <- stat.ranksum (mixt.ranksum = bresat, nRuns = 10000, mc.cores = 2)
 ```
 ```{r, echo=FALSE, eval=FALSE}
-save(perm.cor.p, file="../mixtData/data/perm.cor.p.RData")
+save(perm.cor.p, file="../mixtData/data/perm_cor_p.RData")
 ```
 ```{r, echo=FALSE}
-load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm.cor.p.RData")))
+load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
 ```
 ```{r}
 str(perm.cor.p)
 head(perm.cor.p$all)
 ```
 ```{r, eval=FALSE}
-devtools::use_data(perm.cor.p, overwrite = TRUE)
+devtools::use_data(perm_cor_p, overwrite = TRUE)
 ```
 Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2 
 (`stroma`) are in column.
