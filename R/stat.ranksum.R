@@ -4,6 +4,10 @@
 #' based on the correlation between ranksums of gene expression in gene sets/modules across tissues.
 #'
 #' @param mixt.ranksum output of sig.ranksum()
+#' @param tissue1 name of the first tissue the test is performed for.
+#' should be a valid name of mixt.ranksum
+#' @param tissue2 name of second tissue the test is performed for.
+#' should be a valid name of mixt.ranksum.
 #' @param corType a character string indicating which correlation coefficient
 #' is to be computed.
 #' Default 'p' for pearson
@@ -16,6 +20,8 @@
 #' @export
 #'
 stat.ranksum <- function(mixt.ranksum,
+                         tissue1,
+                         tissue2,
                       corType = "p",
                       nRuns=10000, randomSeed = 12345,
                       mc.cores = 2,
