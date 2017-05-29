@@ -106,8 +106,6 @@ the distribution of random patient ranks (middle.range = 0.95).Both `n` and
 `middle.range` can be set differently.
 
 ```{r}
-library(mixt)
-
 gene.sets <- lapply(moduleColors, function(x.moduleColors){
   split(names(x.moduleColors), factor(x.moduleColors))
 })
@@ -365,7 +363,16 @@ gene expression in gene sets/modules across tissues. This is run independently
 within each patient cohort.  
 
 ```{r, eval=FALSE}
-perm_cor_p <- stat.ranksum (mixt.ranksum = bresat, nRuns = 10000, mc.cores = 2)
+perm_c_cor_p <- NULL
+permor_p$epi2 <- stat.ranksum (mixt.ranksum = bresat, 
+                                       tissue1="epi", tissue2="epi",
+                                       nRuns = 10000, mc.cores = 80)
+perm_cor_p$epi_stroma <- stat.ranksum (mixt.ranksum = bresat, 
+                                       tissue1="epi", tissue2="stroma",
+                                       nRuns = 10000, mc.cores = 80)
+perm_cor_p$stroma2 <- stat.ranksum (mixt.ranksum = bresat, 
+                                       tissue1="stroma", tissue2="stroma",
+                                       nRuns = 10000, mc.cores = 80)
 ```
 ```{r, echo=FALSE, eval=FALSE}
 save(perm_cor_p, file="../mixtData/data/perm_cor_p.RData")
@@ -385,8 +392,18 @@ Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2
 For example, the blue module in epi is associated with the greenyellow module 
 in stroma. You can examine this association with different plots
 ```{r, fig.show='hold', cache=TRUE, fig.height=4, fig.width=4}
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p$epi_stroma, 
                    x.tissue = "epi", x.module = "darkgrey", 
+                   y.tissue = "stroma", y.module = "grey60", 
+                   cohort.name = "ern")
+
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p$epi_stroma, 
+                   x.tissue = "epi", x.module = "darkgrey", 
+                   y.tissue = "epi", y.module = "grey60", 
+                   cohort.name = "ern")
+
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p$epi_stroma, 
+                   x.tissue = "stroma", x.module = "darkgrey", 
                    y.tissue = "stroma", y.module = "grey60", 
                    cohort.name = "ern")
 ```
