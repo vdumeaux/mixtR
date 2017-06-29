@@ -38,9 +38,16 @@ stat.ranksum <- function(mixt.ranksum,
     dat.ranksum <- lapply(dat.ranksum, function (x) {x[grep(cohort, rownames(x)), ]})
 
     result = list()
-    tissue1 = names(dat.ranksum)[1]
-    tissue2 = names(dat.ranksum)[2]
-    nSamples = length(dat.ranksum[[tissue1]][[1]])
+
+    if (tissue1 != names(mixt.ranksum)[1]) {
+      tissue.1 = tissue2
+      tissue.2 = tissue1
+    } else {
+      tissue.1=tissue1
+      tissue.2=tissue2
+    }
+
+    nSamples = length(dat.ranksum[[tissue.1]][[1]])
 
     seedSaved = FALSE
 
@@ -67,11 +74,11 @@ stat.ranksum <- function(mixt.ranksum,
       useTissue1Samples = c(1:nSamples)
       useTissue2Samples = c(1:nSamples)}
 
-      mods <- cor(dat.ranksum[[tissue1]][useTissue1Samples, ],
-                  dat.ranksum[[tissue2]][useTissue2Samples, ], use=corType)
+      mods <- cor(dat.ranksum[[tissue.1]][useTissue1Samples, ],
+                  dat.ranksum[[tissue.2]][useTissue2Samples, ], use=corType)
 
-      rownames(mods) <- names(dat.ranksum[[tissue1]])
-      colnames(mods) <- names(dat.ranksum[[tissue2]])
+      rownames(mods) <- names(dat.ranksum[[tissue.1]])
+      colnames(mods) <- names(dat.ranksum[[tissue.2]])
 
       return(mods)
   }, mc.cores = mc.cores)

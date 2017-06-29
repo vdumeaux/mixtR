@@ -45,7 +45,7 @@ for(i in 1:length(files)){
 Expression and clinical data from matched tissues are contained in a list named `dat`. Each object of the list must include the following objects:
 * `exprs` an expression matrix with m genes in rows and n patients in columns. 
 Rownames of `exprs` are the same gene identifiers as the one used to define gene sets.
-* `cohorts` list of patients subgroups. If you have only one name, the vector
+* `cohorts` list of patients subgroups. If you have only one , the vector
 should still be present
 * `clinical` (optional) a clinical data frame with n patients in rows and 
 clincal variables in columns. Categorical variables should be character or 
@@ -328,19 +328,77 @@ between between a given module and continuous patient attributes (eg. age).
 Analysis of Variance (ANOVA) is used to test association between a given module
 and categorical patient attributes (eg. ER status). 
 
-```{r}
-epi.clinical.assoc.ern <- clinical.ranksum(mixt.dat = dat, 
-                                           mixt.ranksum = bresat, 
-                                           tissue="epi", cohort="ern")
-knitr::kable(epi.clinical.assoc.ern[, 1:6])
+```{r, eval=FALSE}
+epi.clinical.assoc <- lapply(names(dat$epi$cohorts), function(cohort.name) {
+  clinical.ranksum(mixt.dat = dat, 
+                   mixt.ranksum = bresat, 
+                   tissue="epi", cohort = cohort.name,
+                   nRuns = 10000, mc.cores = 80)
+})
+names(epi.clinical.assoc) <- names(dat$epi$cohorts)
+knitr::kable(epi.clinical.assoc$ern[, 1:6])
 
-stroma.clinical.assoc.ern <- clinical.ranksum(mixt.dat = dat, 
-                                              mixt.ranksum = bresat,
-                                              tissue="stroma", cohort="ern")
+stroma.clinical.assoc <- lapply(names(dat$stroma$cohorts), function(cohort.name) {
+  clinical.ranksum(mixt.dat = dat, 
+                   mixt.ranksum = bresat,
+                   tissue="stroma", cohort=cohort.name,
+                   nRuns = 10000, mc.cores = 80)
+})
+names(stroma.clinical.assoc) <- names(dat$stroma$cohorts)
 knitr::kable(stroma.clinical.assoc.ern[, 1:6])
+
+## Adjust for mutliple testing
+emp.p <- list()
+
+emp.p <- NULL
+for (cohort.name in names(dat$epi$cohorts)){
+  emp.p[[cohort.name]] <- cbind(epi.clinical.assoc[[cohort.name]], stroma.clinical.assoc[[cohort.name]])
+}
+
+### Families of tests
+group1 <- c("her2", "HER2S")
+group2 <- c("er", "LUMS", "ERS")
+singles <- rownames(emp.p$all)[!rownames(emp.p$all) %in% c(group1, group2) ]
+gp <- list(group1, group2)
+
+fdr <- NULL
+fdr <- lapply(emp.p, function(p.dat){
+  ret <- do.call(rbind, lapply(gp, function(gpx) {
+      matrix(p.adjust(p.dat[rownames(p.dat) %in% gpx, ], method="BH"), 
+             nrow=length(which(rownames(p.dat) %in% gpx)), 
+             ncol = ncol(p.dat),
+             dimnames = list(rownames(p.dat)[rownames(p.dat) %in% gpx], colnames(p.dat))
+             )
+    }))
+  ret <- rbind(ret, t(apply(p.dat[rownames(p.dat) %in% singles, ], 1, p.adjust, method="BH")))
+  return(ret)
+})
+
+
+fdr <- lapply(fdr, function(val){
+  return(list(epi=val[, 1:24], stroma=val[,25:46]))
+})
+
 ```
-This output is used by the D3 Javascript library (http://d3js.org) to build 
+
+```{r, echo=FALSE, eval=FALSE}
+save(fdr, file="../mixtData/data/mod_clinical_fdr.RData")
+```
+The output can be used by the D3 Javascript library (http://d3js.org) to build 
 interactive visualization in the mixt web application.
+```{r}
+
+
+clinicalVars = rownames(epi.clinical.assoc.ern)
+cols = colnames(epi.clinical.assoc.ern)
+epi.clinical.assoc.ern = cbind(clinicalVars,epi.clinical.assoc.ern)
+colnames(epi.clinical.assoc.ern) = c("Clinical", cols)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+save(perm_cor_p, file="../mixtData/data/mod_clinical_fdr.RData")
+```
+
 
 ## 5. Investigating gene overlap between gene sets across tissues
 Fisher exact test can be used to test the significance of gene overlap between 
@@ -363,8 +421,8 @@ gene expression in gene sets/modules across tissues. This is run independently
 within each patient cohort.  
 
 ```{r, eval=FALSE}
-perm_c_cor_p <- NULL
-permor_p$epi2 <- stat.ranksum (mixt.ranksum = bresat, 
+perm_cor_p <- NULL
+perm_cor_p$epi2 <- stat.ranksum (mixt.ranksum = bresat, 
                                        tissue1="epi", tissue2="epi",
                                        nRuns = 10000, mc.cores = 80)
 perm_cor_p$epi_stroma <- stat.ranksum (mixt.ranksum = bresat, 
@@ -392,17 +450,17 @@ Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2
 For example, the blue module in epi is associated with the greenyellow module 
 in stroma. You can examine this association with different plots
 ```{r, fig.show='hold', cache=TRUE, fig.height=4, fig.width=4}
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p$epi_stroma, 
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
                    x.tissue = "epi", x.module = "darkgrey", 
                    y.tissue = "stroma", y.module = "grey60", 
                    cohort.name = "ern")
 
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p$epi_stroma, 
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
                    x.tissue = "epi", x.module = "darkgrey", 
                    y.tissue = "epi", y.module = "grey60", 
                    cohort.name = "ern")
 
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p$epi_stroma, 
+cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
                    x.tissue = "stroma", x.module = "darkgrey", 
                    y.tissue = "stroma", y.module = "grey60", 
                    cohort.name = "ern")

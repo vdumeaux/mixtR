@@ -22,7 +22,11 @@
 #'
 #' @export
 clinical.ranksum <- function(mixt.dat, mixt.ranksum, tissue,
-                             cohort.name = "all") {
+                             cohort.name = "all",
+                             corType = "p",
+                             nRuns=10000, randomSeed = 12345,
+                             mc.cores = 2,
+                             verbose = 2) {
 
   bs <- mixt.ranksum[[tissue]]
   ranksum.df <- data.frame(lapply(bs, function(x) unlist(lapply(x, "[", "ranksum"))))
@@ -34,36 +38,65 @@ clinical.ranksum <- function(mixt.dat, mixt.ranksum, tissue,
   quant.var <- names(dat.cl)[sapply(dat.cl, class) == "numeric"]
   qual.var <- names(dat.cl)[!names(dat.cl) %in% quant.var]
 
-  tmp <- data.frame()
-  ## qualitative variables
   if(length(qual.var) > 0){
     dat.cl.qual <- dat.cl [, qual.var, drop = FALSE]
     sel <- sapply(dat.cl.qual, function(data) length(levels(factor(data))) > 1)
-    dat.cl.qual <- dat.cl.qual[ , sel, drop = FALSE]
+    dat.cl.qual <- dat.cl.qual[ , sel, drop = FALSE]}
 
-    if (ncol(dat.cl.qual) > 0){
-      tmp <- plyr::laply(dat.cl.qual, function(y) {
-        plyr::laply(ranksum.df, function(x) {
-          stats::anova(stats::lm(x ~ y))$`Pr(>F)`[1]
-        })
-      })
-      rownames(tmp) <- names(dat.cl.qual)
-      colnames(tmp) <- names(ranksum.df)
+    nSamples = length(patients)
+
+    seedSaved = FALSE
+
+    if (!is.null(randomSeed))
+    {
+      if (exists(".Random.seed"))
+      {
+        seedSaved = TRUE;
+        savedSeed = .Random.seed
+      }
+      set.seed(randomSeed)
     }
-  }
 
-  # quantitiative variables
-  if(length(quant.var) > 0){
-    tmp.cor = stats::cor(ranksum.df, dat.cl[, quant.var, drop = FALSE], use = "p")
-    tmp.cor.pvalue = WGCNA::corPvalueStudent(tmp.cor, length(patients))
-    tmp <- rbind(tmp, t(tmp.cor.pvalue))
-  }
+    tmp <- NULL
 
-  clinicalVars = rownames(tmp)
-  cols = colnames(tmp)
-  tmp = cbind(clinicalVars, tmp)
-  colnames(tmp) = c("Clinical", cols)
+    tmp <- parallel::mclapply(1:nRuns, function(i){
+        set.seed(randomSeed + 2*i + 1)
 
-  return(tmp)
+      if (verbose > 0) print(paste("...working on run", i, ".."))
+
+      if (i > 1)
+        {
+          useSamples = sample(nSamples)
+        } else {
+          useSamples = c(1:nSamples)
+        }
+
+      if (ncol(dat.cl.qual) > 0){
+          cl.anova <- data.frame()
+          cl.anova <- plyr::laply(dat.cl.qual, function(y) {
+            plyr::laply(ranksum.df, function(x) {
+              stats::anova(stats::lm(x ~ y[useSamples]))$`F value`[1]
+              })
+            })
+          rownames(cl.anova) <- names(dat.cl.qual)
+          colnames(cl.anova) <- names(ranksum.df)}
+
+      if(length(quant.var) > 0){
+        cl.cor <- t(stats::cor(ranksum.df,
+                               dat.cl[useSamples, quant.var, drop = FALSE],
+                               use = "pairwise.complete.obs", method = corType))
+        }
+
+      ret <- rbind(cl.anova, cl.cor)
+      return(ret)
+      }, mc.cores = mc.cores)
+
+      n.list <- NULL
+      for (i in 2:length(tmp)){
+        n.list[[i-1]]<- abs(tmp[[i]]) >= abs(tmp[[1]])}
+
+      cl.p <-  Reduce('+', n.list)/9999
+
+      return(cl.p)
 }
 

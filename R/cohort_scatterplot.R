@@ -25,9 +25,19 @@ cohort_scatterplot <- function(mixt.ranksum, mixt.stat, x.tissue, x.module, y.ti
     tmp = x.module
     xmodule = y.module
     ymodule = tmp
+    xtissue = y.tissue
+    ytissue = x.tissue
   } else {
     xmodule = x.module
     ymodule = y.module
+    xtissue = x.tissue
+    ytissue = y.tissue
+  }
+
+  if(x.tissue==y.tissue){
+    comp=paste0(xtissue, 2)
+  } else {
+    comp=paste0(xtissue, ytissue)
   }
 
   ### data for scatterplot
@@ -42,7 +52,7 @@ cohort_scatterplot <- function(mixt.ranksum, mixt.stat, x.tissue, x.module, y.ti
     ggplot2::geom_point(size = 2) +
     ggplot2::labs(y = paste(y.module, y.tissue, "module ranksum"), x = paste(x.module,x.tissue, "module ranksum"),
                   title = paste(cohort.name, " patients", " (cor=", as.character(signif(stats::cor.test(plot.data$x.ranksum, plot.data$y.ranksum)$estimate, digits = 1)), ", p=",
-                                signif(mixt.stat[[cohort.name]][xmodule, ymodule], digits = 3), ")", sep = "")) +
+                                signif(mixt.stat[[comp]][[cohort.name]][xmodule, ymodule], digits = 3), ")", sep = "")) +
     ggplot2::theme(legend.position = "none",
                    panel.background = ggplot2::element_rect(fill = "transparent", colour = NA),
                    axis.line.x = ggplot2::element_line(colour = "grey60"),
