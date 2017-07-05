@@ -17,7 +17,7 @@ cohort_scatterplot <- function(mixt.ranksum, mixt.stat, x.tissue, x.module, y.ti
                                cohort.name = "all") {
 
 
-  # we need to swap around these to fix accessing the per.cor.p object
+  # we need to swap around these to fix accessing the perm.cor.p object
   if (x.tissue != names(mixt.ranksum)[1]) {
     tmp = NULL
     xmodule = NULL
@@ -37,7 +37,7 @@ cohort_scatterplot <- function(mixt.ranksum, mixt.stat, x.tissue, x.module, y.ti
   if(x.tissue==y.tissue){
     comp=paste0(xtissue, 2)
   } else {
-    comp=paste0(xtissue, ytissue)
+    comp=paste(xtissue, ytissue, sep="_")
   }
 
   ### data for scatterplot
