@@ -28,7 +28,6 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    WGCNA,
     ggplot2,
     plyr
 VignetteBuilder: knitr

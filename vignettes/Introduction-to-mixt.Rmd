@@ -385,7 +385,7 @@ mod_clinical_fdr <- lapply(fdr, function(val){
 save(mod_clinical_fdr, file="../mixtData/data/mod_clinical_fdr.RData")
 ```
 ```{r, echo=FALSE}
-load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
+load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/mod_clinical_fdr.RData")))
 ```
 ```{r}
 str(mod_clinical_fdr)
@@ -401,18 +401,60 @@ devtools::use_data(mod_clinical_fdr, overwrite = TRUE)
 
 ## 5. Investigating gene overlap between gene sets across tissues
 Fisher exact test can be used to test the significance of gene overlap between 
-modules. P-values are adjusted for multiple testing using the false discovery 
-rate of (Benjamini and Hochberg, 1995). 
+modules. 
 
 ```{r}
-gene.set.overlap <-  WGCNA::overlapTable(moduleColors[[1]], moduleColors[[2]])
+overlapFun <- function (labels1, labels2)
+{
+    labels1 <-  as.vector(labels1)
+    labels2 <-  as.vector(labels2)
+    
+    levels1 <-  sort(unique(labels1))
+    levels2 <-  sort(unique(labels2))
+
+    n1 <-  length(levels1)
+    n2 <-  length(levels2)
+    
+    countMat <-   matrix(0, n1, n2)
+    pMat <-  matrix(0, n1, n2)
+    
+    for (m1 in 1:n1) for (m2 in 1:n2) {
+        m1Members = (labels1 == levels1[m1])
+        m2Members = (labels2 == levels2[m2])
+        
+        t <- table(m1Members, m2Members)
+        # make sure all levels are included
+        tab <- matrix(0, 2, 2)
+        tab[match(rownames(t), c(FALSE, TRUE)), match(colnames(t), c(FALSE, TRUE))] <- t
+
+        pMat[m1, m2] = fisher.test(tab, alternative = "greater")$p.value
+        countMat[m1, m2] = sum(labels1 == levels1[m1] & labels2 ==
+            levels2[m2])
+    }
+    dimnames(pMat) = list(levels1, levels2)
+    dimnames(countMat) = list(levels1, levels2)
+    pMat[is.na(pMat)] = 1
+    list(countTable = countMat, pTable = pMat)
+}
+
+gene.set.overlap <-  overlapFun(moduleColors[[1]], moduleColors[[2]])
 str(gene.set.overlap)
+
+```
+P-values are adjusted for multiple testing using the false discovery 
+rate of (Benjamini and Hochberg, 1995). 
+```{r}
+gene.set.overlap$pTable <- matrix(
+  p.adjust(gene.set.overlap$pTable, method = "BH"),
+  nrow = nrow(gene.set.overlap$pTable),
+  ncol = ncol(gene.set.overlap$pTable), 
+  dimnames = list(rownames(gene.set.overlap$pTable),
+                  colnames(gene.set.overlap$pTable))
+  )
+                                  
 knitr::kable(gene.set.overlap$pTable[1:10, 1:8])
 ```
-
-This output is used by the D3 Javascript library (http://d3js.org) to build 
-interactive visualization in the mixt web application.  
-  
+ 
 ## 6. Matched Interactions Across Tissues
 Interactions between gene sets/modules across tissues are identified using a 
 random permutation approach based on the Pearson correlation between ranksums of
