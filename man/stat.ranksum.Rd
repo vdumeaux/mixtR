@@ -4,11 +4,17 @@
 \alias{stat.ranksum}
 \title{Compute association between gene sets/modules across tissues}
 \usage{
-stat.ranksum(mixt.ranksum, corType = "p", nRuns = 10000,
+stat.ranksum(mixt.ranksum, tissue1, tissue2, corType = "p", nRuns = 10000,
   randomSeed = 12345, mc.cores = 2, verbose = 2)
 }
 \arguments{
 \item{mixt.ranksum}{output of sig.ranksum()}
+
+\item{tissue1}{name of the first tissue the test is performed for.
+should be a valid name of mixt.ranksum}
+
+\item{tissue2}{name of second tissue the test is performed for.
+should be a valid name of mixt.ranksum.}
 
 \item{corType}{a character string indicating which correlation coefficient
 is to be computed.
