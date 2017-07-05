@@ -4,7 +4,9 @@
 \alias{clinical.ranksum}
 \title{Compute associations between gene set/module and patient clinical variables}
 \usage{
-clinical.ranksum(mixt.dat, mixt.ranksum, tissue, cohort.name = "all")
+clinical.ranksum(mixt.dat, mixt.ranksum, tissue, cohort.name = "all",
+  corType = "p", nRuns = 10000, randomSeed = 12345, mc.cores = 2,
+  verbose = 2)
 }
 \arguments{
 \item{mixt.dat}{Data object from matched tissues.}
@@ -16,6 +18,18 @@ look at}
 
 \item{cohort.name}{character string that provides the name of the patient
 cohort to analyze, default is set to 'all'}
+
+\item{corType}{a character string indicating which correlation coefficient
+is to be computed. Default 'p' for pearson}
+
+\item{nRuns}{number of permutations}
+
+\item{randomSeed}{seed number for random number generation.
+Default set as '1234'}
+
+\item{mc.cores}{number of cores}
+
+\item{verbose}{numerical. default > 0 show informational text on progress}
 }
 \value{
 matrix of p-values determining significance of association between
