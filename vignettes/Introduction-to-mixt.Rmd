@@ -27,6 +27,9 @@ If the user wants to build a web application to explore/disseminate the results,
 the outputs should be saved in the `/data` folder of the R package as described
 below. Instructions to build the web application are described in the MIxT web
 application vignette.
+```{r}
+library(mixtR)
+```
 
 ## 1. Input data format 
 
