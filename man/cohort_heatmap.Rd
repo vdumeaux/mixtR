@@ -32,6 +32,6 @@ heatmap plot with patients and genes reordered according to
 sig.ranksum()
 }
 \description{
-\code{cohort_heatmap} generates heatmap where genes and patients are reordered
+Generate heatmap where genes and patients are reordered
 according the sig.ranksum() output for a given gene set expressed in a given tissue
 }
