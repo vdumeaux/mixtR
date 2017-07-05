@@ -361,8 +361,8 @@ group2 <- c("er", "LUMS", "ERS")
 singles <- rownames(emp.p$all)[!rownames(emp.p$all) %in% c(group1, group2) ]
 gp <- list(group1, group2)
 
-fdr <- NULL
-fdr <- lapply(emp.p, function(p.dat){
+mod_clinical_fdr <- NULL
+mod_clinical_fdr <- lapply(emp.p, function(p.dat){
   ret <- do.call(rbind, lapply(gp, function(gpx) {
       matrix(p.adjust(p.dat[rownames(p.dat) %in% gpx, ], method="BH"), 
              nrow=length(which(rownames(p.dat) %in% gpx)), 
@@ -375,28 +375,27 @@ fdr <- lapply(emp.p, function(p.dat){
 })
 
 
-fdr <- lapply(fdr, function(val){
+mod_clinical_fdr <- lapply(fdr, function(val){
   return(list(epi=val[, 1:24], stroma=val[,25:46]))
 })
 
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(fdr, file="../mixtData/data/mod_clinical_fdr.RData")
+save(mod_clinical_fdr, file="../mixtData/data/mod_clinical_fdr.RData")
+```
+```{r, echo=FALSE}
+load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
+```
+```{r}
+str(mod_clinical_fdr)
+head(mod_clinical_fdr$all)
 ```
 The output can be used by the D3 Javascript library (http://d3js.org) to build 
 interactive visualization in the mixt web application.
-```{r}
 
-
-clinicalVars = rownames(epi.clinical.assoc.ern)
-cols = colnames(epi.clinical.assoc.ern)
-epi.clinical.assoc.ern = cbind(clinicalVars,epi.clinical.assoc.ern)
-colnames(epi.clinical.assoc.ern) = c("Clinical", cols)
-```
-
-```{r, echo=FALSE, eval=FALSE}
-save(perm_cor_p, file="../mixtData/data/mod_clinical_fdr.RData")
+```{r, eval=FALSE}
+devtools::use_data(mod_clinical_fdr, overwrite = TRUE)
 ```
 
 
