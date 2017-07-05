@@ -481,7 +481,7 @@ load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
 ```
 ```{r}
 str(perm_cor_p)
-head(perm_cor_p$all)
+head(perm_cor_p$epi_stroma$all)
 ```
 ```{r, eval=FALSE}
 devtools::use_data(perm_cor_p, overwrite = TRUE)
