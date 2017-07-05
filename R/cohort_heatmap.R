@@ -1,7 +1,6 @@
 #' Plot reordered heatmap according to sig.ranksum output
 #'
-#' @description
-#' \code{cohort_heatmap} generates heatmap where genes and patients are reordered
+#' Generate heatmap where genes and patients are reordered
 #' according the sig.ranksum() output for a given gene set expressed in a given tissue
 #'
 #' @param mixt.dat Data object from matched tissues
@@ -15,9 +14,12 @@
 #' @param orderByTissue the tissue where the orderByModule module is found.
 #' Default is the same tissue.
 #' @param cl.height dimension of plotting area for clinical variable. Default = 6
+#'
 #' @import grid
+#'
 #' @return heatmap plot with patients and genes reordered according to
 #' sig.ranksum()
+#'
 #' @export
 #'
 cohort_heatmap <- function(mixt.dat, mixt.ranksum, tissue, module,
