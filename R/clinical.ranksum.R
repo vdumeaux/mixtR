@@ -16,6 +16,15 @@
 #' look at
 #' @param cohort.name character string that provides the name of the patient
 #' cohort to analyze, default is set to 'all'
+#' @param corType a character string indicating which correlation coefficient
+#' is to be computed. Default 'p' for pearson
+#' @param nRuns number of permutations
+#' @param randomSeed seed number for random number generation.
+#' Default set as '1234'
+#' @param mc.cores number of cores
+#' @param verbose numerical. default > 0 show informational text on progress
+#'
+
 #'
 #' @return matrix of p-values determining significance of association between
 #' clinical variables (in row) and gene sets/modules (in column)
