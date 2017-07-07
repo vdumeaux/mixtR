@@ -61,8 +61,19 @@ sig.ranksum <- function(x.dat, up = NULL, dn = NULL, ns = NULL, n = 1000,
         dn <- which(dn)
     if (is.logical(ns))
         ns <- which(ns)
-    if(is.null(x.dat$cohorts))
-      stop("cohorts is missing")
+
+    if (is.null(x.dat$cohorts))
+      stop ("cohorts is missing")
+    if (is.null(x.dat$exprs))
+      stop ("exprs is missing")
+    if (!identical(class(x.dat$cohorts), "list"))
+      stop("cohorts should be a list")
+    if (!all(unlist(sapply(x.dat$cohorts, function(x) {
+      x %in% colnames(x.dat$exprs)})
+      )))
+      stop ("cohorts should be a list of character vectors wit
+             sample names as given in column names of exprs")
+
 
     bresat <- lapply(x.dat$cohorts, function(pat) {
 
