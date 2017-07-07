@@ -27,14 +27,34 @@ cohort_heatmap <- function(mixt.dat, mixt.ranksum, tissue, module,
                            orderByModule = NULL, orderByTissue = NULL,
                            cl.height = 6) {
 
+  if (!identical(class(mixt.dat), "list"))
+    stop("mixt.dat should be a list")
+  if (!identical(class(mixt.ranksum), "list"))
+    stop("mixt.ranksum should be a list")
+  if (!tissue %in% names(mixt.dat))
+    stop ("tissue should be a name of mixt.dat")
+  if (!tissue %in% names(mixt.ranksum))
+    stop ("tissue should be a name of mixt.ranksum")
+  if (!cohort.name %in% names(mixt.ranksum[[tissue]][[module]]))
+    stop ("ranksums were not computed for this cohort")
+  if (!cohort.name %in% names(mixt.dat[[tissue]]$cohorts))
+    stop ("cohort.name does not match names of cohorts in mixt.dat")
+  if (!module %in% names(mixt.ranksum[[tissue]]))
+    stop ("ranksums were not computed for this module")
+
   graphics::plot.new()
   title = ""
   if (is.null(orderByModule)) {
-    orderByModule = module
+    orderByModule <-  module
   }
   if (is.null(orderByTissue)) {
-    orderByTissue = tissue
+    orderByTissue <-  tissue
   }
+  if (!orderByTissue %in% names(mixt.ranksum))
+    stop ("orderByTissue should be a name of mixt.ranksum")
+
+  if (!orderByModule %in% names(mixt.ranksum[[orderByTissue]]))
+        stop ("ranksums were not computed for orderByModule")
 
   if (orderByModule == module && orderByTissue == tissue) {
     title = paste(module, " module from ", tissue, sep = "")

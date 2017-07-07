@@ -28,6 +28,12 @@ stat.ranksum <- function(mixt.ranksum,
                       verbose = 2)
 
 {
+  if (!tissue1 %in% names(mixt.ranksum))
+    stop ("tissue1 should be a name of mixt.ranksum")
+  if (!tissue2 %in% names(mixt.ranksum))
+    stop ("tissue1 should be a name of mixt.ranksum")
+
+
   dat.ranksum <- lapply(mixt.ranksum, function (bs) {
     data.frame(lapply(bs, function(x) unlist(lapply(x, "[", "ranksum"))))
     })

@@ -37,6 +37,24 @@ clinical.ranksum <- function(mixt.dat, mixt.ranksum, tissue,
                              mc.cores = 2,
                              verbose = 2) {
 
+  if (!tissue %in% names(mixt.ranksum))
+    stop ("tissue should be a name of mixt.ranksum")
+  if (is.null(mixt.dat[[tissue]]$clinical))
+    stop ("clinical is missing")
+  if (!cohort.name %in% names(mixt.dat[[tissue]]$cohorts))
+    stop ("cohort.name does not match names of cohorts in mixt.dat")
+
+  if (is.null(mixt.dat[[tissue]]$cohorts))
+    stop("members of cohorts should be named")
+  if (!is.null(mixt.dat[[tissue]]$cohorts) & any(is.na(names(mixt.dat[[tissue]]$cohorts))))
+    stop("all members of cohorts be named")
+  if (!all(unlist(sapply(mixt.dat[[tissue]]$cohorts, function(x) {
+    x %in% colnames(mixt.dat[[tissue]]$exprs)})
+  )))
+    stop ("cohorts should be a list of character vectors of
+             sample names as given in column names of exprs")
+
+
   bs <- mixt.ranksum[[tissue]]
   ranksum.df <- data.frame(lapply(bs, function(x) unlist(lapply(x, "[", "ranksum"))))
   ranksum.df <- ranksum.df[grep(cohort.name, rownames(ranksum.df)), ]
