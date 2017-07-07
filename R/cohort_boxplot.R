@@ -10,6 +10,20 @@
 #' @export
 cohort_boxplot <- function(mixt.ranksum, tissue, module, cohort.name = "all",
                            orderByTissue=NULL, orderByModule=NULL) {
+
+
+  if (!tissue %in% names(mixt.ranksum))
+    stop ("tissue should be a name of mixt.ranksum")
+  if (!module %in% names(mixt.ranksum[[tissue]]))
+    stop ("ranksums were not computed for module in this tissue")
+  if (!cohort.name %in% names(mixt.ranksum[[tissue]][[module]]))
+    stop ("ranksums were not computed for this cohort")
+  if (!is.null(orderByTissue) & !orderByTissue %in% names(mixt.ranksum))
+    stop ("orderByTissue should be a name of mixt.ranksum")
+  if (!is.null(orderByModule) & !orderByModule %in% names(mixt.ranksum[[orderByTissue]]))
+    stop ("ranksums were not computed for orderByModule")
+
+
   if (is.null(orderByModule)) {
     orderByModule <-  module
   }
@@ -28,7 +42,7 @@ cohort_boxplot <- function(mixt.ranksum, tissue, module, cohort.name = "all",
   plot.data$roi.cat [is.na(plot.data$roi.cat)] <- "other"
   plot.data$roi.cat.ordered <- factor(plot.data$roi.cat, levels=c("high", "mid", "low", "other"), ordered = TRUE)
 
-  p <- ggplot2::ggplot(data = plot.data, ggplot2::aes(x = roi.cat.ordered, y = ranksum)) +
+  p <- ggplot2::ggplot(data = plot.data, ggplot2::aes_string(x = "roi.cat.ordered", y = "ranksum")) +
     ggplot2::geom_boxplot(colour = "black", outlier.shape = "+", outlier.size = 1, fill = NA) +
     ggplot2::geom_point(shape = "+") +
     ggplot2::labs(x = paste(orderByModule, orderByTissue, "ROI module category"), y = paste(module, tissue, "module ranksum", sep = " "),
