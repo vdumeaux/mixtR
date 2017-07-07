@@ -194,17 +194,17 @@ sig$set<-c(rep("h", length(msigdb$h.all)),
 msigdb_enrichment <- list()
 msigdb_enrichment$epi<- functional.enrichment(mixt.ranksum = bresat,
                                               tissue="epi",
-                                              cohort.name = "ern"
+                                              cohort.name = "ern",
                                               functional.groups = sig,
                                               p.adjust.method = "BH",
-                                              mc.cores=2)
+                                              mc.cores=80)
 
 msigdb_enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
                                                  tissue="stroma",
-                                                 cohort.name = "ern"
+                                                 cohort.name = "ern",
                                                  functional.groups = sig,
                                                  p.adjust.method = "BH",
-                                                 mc.cores=2)
+                                                 mc.cores=80)
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
@@ -261,6 +261,7 @@ We also annotate gene sets/modules based on gene ontology (GO) enrichment,
 for example  using the R topGO package.
 ```{r, eval=FALSE}
 library(topGO)
+library(org.Hs.eg.db)
 bckg.genes <- rownames(dat[[1]]$exprs) 
 xx <- annFUN.org("BP", mapping = "org.Hs.eg.db", ID = "symbol")
 head(xx)
@@ -353,7 +354,7 @@ stroma.clinical.assoc <- lapply(names(dat$stroma$cohorts), function(cohort.name)
                    nRuns = 10000, mc.cores = 80)
 })
 names(stroma.clinical.assoc) <- names(dat$stroma$cohorts)
-knitr::kable(stroma.clinical.assoc.ern[, 1:6])
+knitr::kable(stroma.clinical.assoc[, 1:6])
 
 ## Adjust for mutliple testing
 emp.p <- list()
@@ -383,7 +384,7 @@ mod_clinical_fdr <- lapply(emp.p, function(p.dat){
 })
 
 
-mod_clinical_fdr <- lapply(fdr, function(val){
+mod_clinical_fdr <- lapply(mod_clinical_fdr, function(val){
   return(list(epi=val[, 1:24], stroma=val[,25:46]))
 })
 
