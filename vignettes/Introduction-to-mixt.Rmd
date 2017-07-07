@@ -27,13 +27,15 @@ If the user wants to build a web application to explore/disseminate the results,
 the outputs should be saved in the `/data` folder of the R package as described
 below. Instructions to build the web application are described in the MIxT web
 application vignette.
+
+First load the mixtR package in your R session.
 ```{r}
 library(mixtR)
 ```
 
 ## 1. Input data format 
 
-Here is the example of gene expression profiles from microdissected epithelium 
+In this vignette, we are taking the example of gene expression profiles from microdissected epithelium 
 and stroma from non-inflammatory invasive breast tumors from boersma et al.
 ```{r}
 files= c("dat.RData", "moduleColors.RData")
@@ -45,7 +47,10 @@ for(i in 1:length(files)){
 }
 ```
 
-Expression and clinical data from matched tissues are contained in a list named `dat`. Each object of the list must include the following objects:
+Expression and clinical data from matched tissues  were formatted so that they 
+are contained in a list named `dat`. 
+
+Each object of the list must include the following objects:
 * `exprs` an expression matrix with m genes in rows and n patients in columns. 
 Rownames of `exprs` are the same gene identifiers as the one used to define gene sets.
 * `cohorts` list of patients subgroups. If you have only one , the vector
@@ -121,12 +126,12 @@ bresat <- list()
 bresat$epi <- lapply(gene.sets$epi, function (mod){
     sig.ranksum (x.dat = dat$epi, 
                  ns = which(rownames(dat$epi$exprs) %in% mod),
-                 n=10000, mc.cores = 2)
+                 n=10000, mc.cores = 2)})
   
 bresat$stroma <- lapply(gene.sets$stroma, function (mod){
     sig.ranksum (x.dat = dat$stroma, 
                  ns = which(rownames(dat$stroma$exprs) %in% mod),
-                 n=10000, mc.cores = 2)
+                 n=10000, mc.cores = 2)})
 ```
 ```{r, echo=FALSE, eval=FALSE}
 save(bresat, file = "../mixtData/data/bresat.RData")
@@ -466,6 +471,7 @@ within each patient cohort.
 
 ```{r, eval=FALSE}
 perm_cor_p <- NULL
+
 perm_cor_p$epi2 <- stat.ranksum (mixt.ranksum = bresat, 
                                        tissue1="epi", tissue2="epi",
                                        nRuns = 10000, mc.cores = 80)
@@ -482,29 +488,37 @@ save(perm_cor_p, file="../mixtData/data/perm_cor_p.RData")
 ```{r, echo=FALSE}
 load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
 ```
+Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2 
+(`stroma`) are in column.
 ```{r}
 str(perm_cor_p)
 head(perm_cor_p$epi_stroma$all)
 ```
+  
+Again, for the web application data must be saved in the data folder of
+the mixt package with the same format and naming approach:
+* perm_cor_p is a list of all possible comparison between tissues  
+* Members of perm_cor_p should be named as follow  
+    + same tissue comparisons: "tissuename2"
+    + two-tissue comparison: "tissuename1_tissuename2"
+
 ```{r, eval=FALSE}
 devtools::use_data(perm_cor_p, overwrite = TRUE)
 ```
-Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2 
-(`stroma`) are in column.
-For example, the blue module in epi is associated with the greenyellow module 
-in stroma. You can examine this association with different plots
+
+You can then examine these associations with different plots
 ```{r, fig.show='hold', cache=TRUE, fig.height=4, fig.width=4}
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
+cohort_scatterplot(mixt.ranksum = bresat, 
                    x.tissue = "epi", x.module = "darkgrey", 
                    y.tissue = "stroma", y.module = "grey60", 
                    cohort.name = "ern")
 
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
+cohort_scatterplot(mixt.ranksum = bresat, 
                    x.tissue = "epi", x.module = "darkgrey", 
                    y.tissue = "epi", y.module = "grey60", 
                    cohort.name = "ern")
 
-cohort_scatterplot(mixt.ranksum = bresat, mixt.stat = perm_cor_p, 
+cohort_scatterplot(mixt.ranksum = bresat, 
                    x.tissue = "stroma", x.module = "darkgrey", 
                    y.tissue = "stroma", y.module = "grey60", 
                    cohort.name = "ern")
