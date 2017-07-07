@@ -4,13 +4,11 @@
 \alias{cohort_scatterplot}
 \title{Plot scatterplot of ranksums}
 \usage{
-cohort_scatterplot(mixt.ranksum, mixt.stat, x.tissue, x.module, y.tissue,
-  y.module, cohort.name = "all")
+cohort_scatterplot(mixt.ranksum, x.tissue, x.module, y.tissue, y.module,
+  cohort.name = "all")
 }
 \arguments{
 \item{mixt.ranksum}{output of sig.ranksum()}
-
-\item{mixt.stat}{output of stat.ranksum()}
 
 \item{x.tissue}{character string providing the name of tissue on the x axis}
 
