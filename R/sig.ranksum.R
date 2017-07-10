@@ -181,6 +181,8 @@ sig.ranksum <- function(x.dat, up = NULL, dn = NULL, ns = NULL, n = 1000,
         ret$up.dn <- c(rep(1, length(up)), rep(-1, length(dn)))
         ret$up <- up
         ret$dn <- dn
+        ret$up.cor <- up.cor
+        ret$dn.cor <- dn.cor
 
         datrank.up <- datrank.dn <- NULL
         if (any(ret$up.dn > 0))
