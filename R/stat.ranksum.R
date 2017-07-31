@@ -40,7 +40,7 @@ stat.ranksum <- function(mixt.ranksum,
 
   cohort.name <- names(mixt.ranksum[[1]][[1]])
 
-  perm.cor.p <- lapply(cohort.name, function(cohort){
+  perm_cor_p <- lapply(cohort.name, function(cohort){
     dat.ranksum <- lapply(dat.ranksum, function (x) {x[grep(cohort, rownames(x)), ]})
 
     result = list()
@@ -96,8 +96,8 @@ stat.ranksum <- function(mixt.ranksum,
     ret <-  Reduce('+', n.list)/9999
     return(ret)})
 
-    names(perm.cor.p) <- cohort.name
-    return(perm.cor.p)
+    names(perm_cor_p) <- cohort.name
+    return(perm_cor_p)
 
 }
 

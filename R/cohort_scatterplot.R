@@ -26,7 +26,7 @@ cohort_scatterplot <- function(mixt.ranksum, x.tissue, x.module, y.tissue, y.mod
     stop ("ranksums were not computed for y.module in y.tissue")
 
 
-  # we need to swap around these to fix accessing the perm.cor.p object
+  # we need to swap around these to fix accessing the perm_cor_p object
   if (x.tissue != names(mixt.ranksum)[1]) {
     tmp = NULL
     xmodule = NULL
