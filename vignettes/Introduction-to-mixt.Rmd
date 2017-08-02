@@ -76,25 +76,12 @@ involved in different pathways/molecular processes.
 str(moduleColors)
 ```
 
-If you want to build the mixt web application all data should be formatted as 
-decribed earlier and saved in the data directory of the mixt package. 
-Both objects should be called `dat` and `moduleColors`. You then need to 
-overwrite the data examples already in this folder using: 
-
-```{r, eval=FALSE}
-devtools::use_data(dat, overwrite = TRUE)
-devtools::use_data(moduleColors, overwrite = TRUE)
-```
-
 You can import the top node and edges for each netwrok that you can vizualize in Cytoscape or in the mixt web application
 ```{r}
 load(url("https://rawgit.com/vdumeaux/mixtData/master/data/TOM_net.RData"))
 str(TOM_net)
 ```
 
-```{r, eval=FALSE}
-devtools::use_data(TOM_net, overwrite = TRUE)
-```
 
 ## 2. Patient linear ordering and region of independence
  
@@ -142,11 +129,6 @@ load(url("https://rawgit.com/vdumeaux/mixtData/master/data/bresat.RData"))
 ```{r}
 names(bresat$epi)
 str(bresat$epi$blue)
-```
-Again, for the web application data must be saved in the data folder of the 
-mixt package
-```{r, eval=FALSE}
-devtools::use_data(bresat, overwrite = TRUE)
 ```
 
 You can plot heatmap of a given gene set expressed in a given tissue and 
@@ -215,13 +197,6 @@ save(msigdb_enrichment, file = "../mixtData/data/msigdb_enrichment.RData")
 load(url("https://rawgit.com/vdumeaux/mixtData/master/data/msigdb_enrichment.RData"))
 ```
   
-Again, for the web application data must be saved in the data folder of
-the mixt package
-```{r, eval=FALSE}
-devtools::use_data(msigdb_enrichment, overwrite = TRUE)
-```
-
-
 ```{r}
 library(plyr)
 
@@ -321,12 +296,6 @@ save(goterms, file = "../mixtData/data/goterms.RData")
 load(url("https://rawgit.com/vdumeaux/mixtData/master/data/goterms.RData"))
 ```
   
-Again, for the web application data must be saved in the data folder of
-the mixt package
-```{r, eval=FALSE}
-devtools::use_data(goterms, overwrite = TRUE)
-```
-
 # 4. Association between gene sets and clinical variables
 Using ranksums to capture module expression, we can ask how gene sets/modules 
 in each tissue are differentially expressed according to patient’s 
@@ -400,13 +369,6 @@ load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/mod_clinical_fdr.RDa
 str(mod_clinical_fdr)
 head(mod_clinical_fdr$all)
 ```
-The output can be used by the D3 Javascript library (http://d3js.org) to build 
-interactive visualization in the mixt web application.
-
-```{r, eval=FALSE}
-devtools::use_data(mod_clinical_fdr, overwrite = TRUE)
-```
-
 
 ## 5. Investigating gene overlap between gene sets across tissues
 Fisher exact test can be used to test the significance of gene overlap between 
@@ -496,17 +458,6 @@ str(perm_cor_p)
 head(perm_cor_p$epi_stroma$all)
 ```
   
-Again, for the web application data must be saved in the data folder of
-the mixt package with the same format and naming approach:
-* perm_cor_p is a list of all possible comparison between tissues  
-* Members of perm_cor_p should be named as follow  
-    + same tissue comparisons: "tissuename2"
-    + two-tissue comparison: "tissuename1_tissuename2"
-
-```{r, eval=FALSE}
-devtools::use_data(perm_cor_p, overwrite = TRUE)
-```
-
 You can then examine these associations with different plots
 ```{r, fig.show='hold', cache=TRUE, fig.height=4, fig.width=4}
 cohort_scatterplot(mixt.ranksum = bresat, 
