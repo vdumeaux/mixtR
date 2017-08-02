@@ -1,12 +1,12 @@
-## MIxT web application
+# MIxT web application
 The MIxT web application is designed for exploring the results from the MIxT analysis comparing transcriptional profiles from two matched tissues across individuals. 
 
 
-###  mixtApp R Package (mixtApp)
+##  mixtApp R Package (mixtApp)
 R package that provides the extra functions used in the compute service for
 the MIxT web application. 
 
-#### Install 
+### Install 
 Using R 
 ```
 > devtoools::install_github("vdumeaux/mixtApp")
@@ -18,7 +18,7 @@ $ R CMD INSTALL mixtApp
 ```
 if you plan on using it with your data later. 
 
-#### Data ?
+### Data ?
 If you want to build the mixt web application all data should be formatted as 
 decribed earlier and saved in `data/` folder of the mixtApp package. 
 
@@ -33,14 +33,14 @@ $ R -f data-raw/datasets.R
 $ R CMD INSTALL .
 ```
 
-# Backend data and analysis server for MIxT 
+## Backend data and analysis server for MIxT 
 The presentation (web app) and data analysis (compute-backend) are separated into two services/processes/docker containers
 
 
 First, install [Docker](http://docker.com) 
 
 
-## Build and run the compute service
+### Build and run the compute service
 
 This the is the compute service in the MIxT web application. It is simply the
 compute service in [Kvik](https://github.com/fjukstad/kvik) with the
@@ -62,7 +62,7 @@ docker run -p 8787:80 -t mixt-compute-service
 Note: If there's already a server running you'll have to use `docker ps` to get
 its name and `docker stop CONTAINTERNAME` to stop it.
 
-## Build and run the compute service
+### Build and run the web application
 
 The compute service runs on port `:8787` and can be used by the
 [MIxT web application](http://github.com/fjukstad/mixt). 
