@@ -1,5 +1,7 @@
 # MIxT web application
-The MIxT web application is designed for exploring the results from the MIxT analysis comparing transcriptional profiles from two matched tissues across individuals. 
+The MIxT web application is designed for exploring the results from the MIxT
+analysis comparing transcriptional profiles from two matched tissues across
+individuals. 
 
 
 ##  mixtApp R Package (mixtApp)
@@ -34,7 +36,8 @@ $ R CMD INSTALL .
 ```
 
 ## Backend data and analysis server for MIxT 
-The presentation (web app) and data analysis (compute-backend) are separated into two services/processes/docker containers
+The presentation (web app) and data analysis (compute-backend) are separated
+into two services/processes/docker containers
 
 
 First, install [Docker](http://docker.com) 
