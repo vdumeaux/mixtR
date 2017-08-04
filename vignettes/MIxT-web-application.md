@@ -59,7 +59,7 @@ which build the container for you. Now you can start it up to accept requests on
 port `8787` by running 
 
 ```
-docker run -p --name=compute-service -t compute-service
+docker run --name=compute-service -t compute-service
 ```
 
 and it should appear with the `docker ps` command: 
