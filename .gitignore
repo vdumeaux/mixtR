@@ -1,6 +1,6 @@
 packrat/*
 .Rproj.user
 inst/doc
-mixt.Rproj
+*.Rproj
 .Rhistory
 .Rbuildignore
