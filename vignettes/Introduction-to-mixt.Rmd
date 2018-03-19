@@ -9,18 +9,18 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The mixt package (Matched Interactions across Tissues) contains the computational 
+The mixtR package (Matched Interactions across Tissues) contains the computational 
 and statistical methods for identifying and exploring associations between sets
 of genes or molecular processes across tissues.  
 
-The mixt analysis requires gene expression profiles of two matched tissues and 
+The mixtR analysis requires gene expression profiles of two matched tissues and 
 is based on two core functions:
 - `sig.ranksum` a function that maps samples to a linear ordering based on 
 expression of a set of genes of interest
 - `stat.ranksum` a function that derives estimates of significance for 
 association between gene sets of interest across tissues.
 
-The mixt package also offers ad-hoc plotting functions (`cohort_heatmap`, 
+The mixtR package also offers ad-hoc plotting functions (`cohort_heatmap`, 
 `cohort_scatterplot`, `cohort_boxplot`).
 
 If the user wants to build a web application to explore/disseminate the results, 
@@ -76,7 +76,7 @@ involved in different pathways/molecular processes.
 str(moduleColors)
 ```
 
-You can import the top node and edges for each netwrok that you can vizualize in Cytoscape or in the mixt web application
+You can import the top node and edges for each netwrok that you can vizualize in Cytoscape or in the MIxT web application
 ```{r}
 load(url("https://rawgit.com/vdumeaux/mixtData/master/data/TOM_net.RData"))
 str(TOM_net)
@@ -237,6 +237,7 @@ for example  using the R topGO package.
 ```{r, eval=FALSE}
 library(topGO)
 library(org.Hs.eg.db)
+library(plyr)
 bckg.genes <- rownames(dat[[1]]$exprs) 
 xx <- annFUN.org("BP", mapping = "org.Hs.eg.db", ID = "symbol")
 head(xx)
@@ -286,6 +287,21 @@ goterms <- lapply(tissue.names, function (tissue){
 })
 names(goterms) <- tissue.names
 
+goterms.table <- list()
+for (tissue in c("epi", "stroma")){
+  goterms.table[[tissue]] <- lapply(goterms[[tissue]], "[[", "GO.table")
+  goterms.table[[tissue]] <- lapply(goterms.table[[tissue]], function(x){
+    dplyr::slice(x, 1:20)})
+}
+
+epi.goterms<-ldply(goterms.table$epi)
+stroma.goterms<-ldply(goterms.table$stroma)
+
+```
+
+```{r, eval=FALSE, echo=FALSE}
+write.table(epi.goterms, file = "epi.goterms.txt", sep="\t", col.names = T)
+write.table(stroma.goterms, file = "stroma.goterms.txt", sep="\t", col.names = T)
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
