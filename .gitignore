@@ -4,3 +4,4 @@ inst/doc
 *.Rproj
 .Rhistory
 .Rbuildignore
+output/
