@@ -57,7 +57,7 @@ clinical.ranksum <- function(mixt.dat, mixt.ranksum, tissue,
 
   bs <- mixt.ranksum[[tissue]]
   ranksum.df <- data.frame(lapply(bs, function(x) unlist(lapply(x, "[", "ranksum"))))
-  ranksum.df <- ranksum.df[grep(cohort.name, rownames(ranksum.df)), ]
+  ranksum.df <- ranksum.df[grep(paste0("^", cohort.name,".ranksum"), rownames(ranksum.df)), ]
 
   patients <- mixt.dat[[tissue]]$cohorts[[cohort.name]]
   dat.cl <- mixt.dat[[tissue]]$clinical[colnames(mixt.dat[[tissue]]$exprs) %in%
