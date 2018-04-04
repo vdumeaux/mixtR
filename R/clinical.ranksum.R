@@ -100,7 +100,7 @@ clinical.ranksum <- function(mixt.dat, mixt.ranksum, tissue,
 
       if (ncol(dat.cl.qual) > 0){
           cl.anova <- data.frame()
-          cl.anova <- plyr::laply(dat.cl.qual, function(y) {
+          cl.anova <- plyr::laply(dat.cl.qual, .drop = FALSE, function(y) {
             plyr::laply(ranksum.df, function(x) {
               stats::anova(stats::lm(x ~ y[useSamples]))$`F value`[1]
               })
