@@ -61,7 +61,7 @@ clinical.ranksum <- function(mixt.dat, mixt.ranksum, tissue,
 
   patients <- mixt.dat[[tissue]]$cohorts[[cohort.name]]
   dat.cl <- mixt.dat[[tissue]]$clinical[colnames(mixt.dat[[tissue]]$exprs) %in%
-                                          patients, ]
+                                          patients, , drop = FALSE]
   quant.var <- names(dat.cl)[sapply(dat.cl, class) == "numeric"]
   qual.var <- names(dat.cl)[!names(dat.cl) %in% quant.var]
 
