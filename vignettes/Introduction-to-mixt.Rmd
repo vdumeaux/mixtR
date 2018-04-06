@@ -156,21 +156,22 @@ msigdb.files <- c("c1.all", "h.all", "c2.cp", "c2.cgp", "c5.all", "c6.all",
 msigdb <- list()
 
 msigdb <- lapply(msigdb.files, function(p) {
-  input.file <- file.path("extdata", paste0(p, ".v5.2.symbols.gmt"))
+  input.file <- file.path("../../extdata", paste0(p, ".v5.2.symbols.gmt"))
   ret <-  read.gmt.msigdb(input.file)
   return(ret)
 })
 names(msigdb) <- msigdb.files
 ```
 
-We choose to use the hallmark (h) and curated (c2) gene set collections. 
+We choose to use the hallmark (h), poistional (c1) and curated (c2) gene set collections. 
 ```{r, eval=FALSE}
 sig<-list()
 
-sig$all.sig<-c(msigdb$h.all, msigdb$c2.cp, msigdb$c2.cgp)
+sig$all.sig<-c(msigdb$h.all, msigdb$c1.all, msigdb$c2.cp, msigdb$c2.cgp)
 
-sig$set<-c(rep("h", length(msigdb$h.all)), 
-           rep("c2.cp", length(msigdb$c2.cp)),
+sig$set<-c(rep("h", length(msigdb$h.all)),
+           rep("c1", length(msigdb$c1.all))
+ ,          rep("c2.cp", length(msigdb$c2.cp)),
            rep("c2.cgp", length(msigdb$c2.cgp)))
 
 msigdb_enrichment <- list()
@@ -190,7 +191,7 @@ msigdb_enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(msigdb_enrichment, file = "../mixtData/data/msigdb_enrichment.RData")
+save(msigdb_enrichment, file = "../../mixtData/data/msigdb_enrichment.RData")
 ```
 
 ```{r, echo=FALSE}
@@ -228,8 +229,8 @@ knitr::kable(stroma.msig[1:6,])
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-write.table(epi.msig, file = "epi.msig.txt", sep="\t", col.names = T)
-write.table(stroma.msig, file = "stroma.msig.txt", sep="\t", col.names = T)
+write.table(epi.msig, file = "epi.msig.txt", sep="\t", col.names = T, quote = FALSE)
+write.table(stroma.msig, file = "stroma.msig.txt", sep="\t", col.names = T, quote = FALSE)
 ```
 
 We also annotate gene sets/modules based on gene ontology (GO) enrichment, 
