@@ -8,33 +8,11 @@ application please refer to
 ["Building Applications For Interactive Data Exploration In Systems Biology" by Fjukstad et al.](biorxiv.org/content/early/2017/05/24/141630) 
 and the source code [here](https://github.com/fjukstad/mixt). 
 
-In summary the application consists of three components or services: a
-compute service that provides analyses of transcriptional profiles, a database
-service for retrieving metadata for e.g. genes, and a web server hosting the
-application itself. The web server interface with both the compute and database
-services to retrieve data in the web application. 
-
-If you  want to run the web application you must run all services. We have
-bundled them all in [Docker](http://docker.com) containers that make deploying
-the application a simple task: 
-
-```
-$ git clone github.com/fjukstad/mixt
-$ cd mixt
-$ docker-compose up
-```
-
-The application should now run on [localhost:8000](http://localhost:8000). The
-above workflow requires that you have both `git` and [Docker](http://docker.com)
-installed. 
-
 # New Data 
 The [mixtApp](https://github.com/vdumeaux/mixtApp) R package provides data and
-analyses of transcriptional profiles for the web application. Instead of
-building a web application where we use pre-computed results we run the analyses
-on demand. 
+analyses of transcriptional profiles for the web application. 
 
-If you want to modify the data being used in the web application you'll have to
+If you want to modify the data being used in the web application you can
 rebuild the mixtApp package yourself, and start the different services
 manually.
 
@@ -45,17 +23,19 @@ repository:
 $ git clone https://github.com/vdumeaux/mixtApp.git
 ```
 
-Then `cd` into the `mixtApp` directory and add your data to the `data/` folder
-formatted as described earlier.
-One option to replace the data in the `data/` folder is to modify the 
-data url in `data-raw/datasets.R` and run the following to rebuild and install
-the mixtApp package containing the new data.
+Then `cd` into the `mixtApp` directory and add a few pre-computed data outputs 
+you obtained from the mixtR package to the `data/` folder.
+One option to replace the data is to modify the 
+data url in `data-raw/datasets.R` and run the following:
 ```
 $ R -f data-raw/datasets.R
+```
+You then need to to rebuild the mixtApp package containing the new data using
+```
 $ R CMD INSTALL .
 ```
 
-Next up is building the compute servicecontainer with your new mixtApp package.
+Next up is building the container with your new mixtApp package.
 
 Still in the `mixtApp/` directory, run: 
 ```
@@ -63,7 +43,7 @@ docker build -t compute-service .
 docker run --name=compute-service -t compute-service
 ```
 
-which build and run the compute service container. 
+which build and run the container. 
 It should appear with the `docker ps` command: 
 
 ```
@@ -79,7 +59,7 @@ container. This is luckily a one liner:
 docker run -p 8000:80 --link compute-service -e COMPUTE_SERVICE=compute-service:80 --name=mixt -t fjukstad/mixt-stroma
 ```
 
-That's it!  You can now visit the application running on
+That's it!  You can now visit the application using you own data running on
 [localhost:8000](http://localhost:8000). 
 
 If you need more details on the docker commands you can have a look
