@@ -74,7 +74,7 @@ The compute service is now running, so next up is starting the web application
 container. This is lucily one liner: 
 
 ```
-docker run -p 8000:80 --link compute-service -e COMPUTE_SERVICE=compute-service:80 --name=mixt -t fjukstad/mixt
+docker run -p 8000:80 --link compute-service -e COMPUTE_SERVICE=compute-service:80 --name=mixt -t fjukstad/mixt-stroma
 ```
 
 That's it!  You can now visit the application running on
