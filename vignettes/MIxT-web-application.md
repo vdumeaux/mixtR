@@ -59,7 +59,7 @@ container. This is luckily a one liner:
 docker run -p 8000:80 --link compute-service -e COMPUTE_SERVICE=compute-service:80 --name=mixt -t fjukstad/mixt-stroma
 ```
 
-That's it!  You can now visit the application using you own data running on
+That's it!  You can now visit the application that displays you own data running on
 [localhost:8000](http://localhost:8000). 
 
 If you need more details on the docker commands you can have a look
