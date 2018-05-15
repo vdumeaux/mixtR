@@ -46,23 +46,25 @@ $ git clone https://github.com/vdumeaux/mixtApp.git
 ```
 
 Then `cd` into the `mixtApp` directory and add your data to the `data/` folder
-formatted as described earlier. Next up is building the compute service
-container with your new mixtApp package.
+formatted as described earlier.
+One option to replace the data in the `data/` folder is to modify the 
+data url in `data-raw/datasets.R` and run the following to rebuild and install
+the mixtApp package containing the new data.
+```
+$ R -f data-raw/datasets.R
+$ R CMD INSTALL .
+```
+
+Next up is building the compute servicecontainer with your new mixtApp package.
 
 Still in the `mixtApp/` directory, run: 
-
 ```
 docker build -t compute-service .
-```
-
-which build the container for you. Now you can start it up to accept requests on
-port `8787` by running 
-
-```
 docker run --name=compute-service -t compute-service
 ```
 
-and it should appear with the `docker ps` command: 
+which build and run the compute service container. 
+It should appear with the `docker ps` command: 
 
 ```
  docker ps
@@ -71,7 +73,7 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 ```
 
 The compute service is now running, so next up is starting the web application
-container. This is lucily one liner: 
+container. This is luckily a one liner: 
 
 ```
 docker run -p 8000:80 --link compute-service -e COMPUTE_SERVICE=compute-service:80 --name=mixt -t fjukstad/mixt-stroma
@@ -82,5 +84,3 @@ That's it!  You can now visit the application running on
 
 If you need more details on the docker commands you can have a look
 at[docs.docker.com](https://docs.docker.com).
-
-
