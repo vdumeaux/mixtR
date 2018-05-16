@@ -121,7 +121,7 @@ bresat$stroma <- lapply(gene.sets$stroma, function (mod){
                  n=10000, mc.cores = 2)})
 ```
 ```{r, echo=FALSE, eval=FALSE}
-save(bresat, file = "../mixtData/data/bresat.RData")
+save(bresat, file = "../../mixtData/data/bresat.RData")
 ```
 ```{r, echo=FALSE}
 load(url("https://rawgit.com/vdumeaux/mixtData/master/data/bresat.RData"))
@@ -229,8 +229,8 @@ knitr::kable(stroma.msig[1:6,])
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-write.table(epi.msig, file = "epi.msig.txt", sep="\t", col.names = T, quote = FALSE)
-write.table(stroma.msig, file = "stroma.msig.txt", sep="\t", col.names = T, quote = FALSE)
+write.table(epi.msig, file = "../output/epi.msig.txt", sep="\t", col.names = T, quote = FALSE)
+write.table(stroma.msig, file = "../output/stroma.msig.txt", sep="\t", col.names = T, quote = FALSE)
 ```
 
 We also annotate gene sets/modules based on gene ontology (GO) enrichment, 
@@ -271,7 +271,7 @@ goterms <- lapply(tissue.names, function (tissue){
   allRes <- GenTable(GO.genes, classicFisher = resultFisher, 
                       weight01Fisher= weight01Fisher, 
                       orderBy = "weight01Fisher", 
-                      topNodes=length(usedGO(GO.genes))) 
+                      topNodes=length(usedGO(GO.genes)), numChar = 1000) 
   allRes <- subset(allRes, classicFisher != "1.00000")
     
   gt <- genesInTerm(GO.genes, allRes$GO.ID)
@@ -306,7 +306,7 @@ write.table(stroma.goterms, file = "stroma.goterms.txt", sep="\t", col.names = T
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(goterms, file = "../mixtData/data/goterms.RData")
+save(goterms, file = "../../mixtData/data/goterms.RData")
 ```
 
 ```{r, echo=FALSE}
@@ -340,7 +340,7 @@ stroma.clinical.assoc <- lapply(names(dat$stroma$cohorts), function(cohort.name)
                    nRuns = 10000, mc.cores = 80)
 })
 names(stroma.clinical.assoc) <- names(dat$stroma$cohorts)
-knitr::kable(stroma.clinical.assoc[, 1:6])
+knitr::kable(stroma.clinical.assoc$all[, 1:6])
 
 ## Adjust for mutliple testing
 emp.p <- list()
@@ -371,13 +371,13 @@ mod_clinical_fdr <- lapply(emp.p, function(p.dat){
 
 
 mod_clinical_fdr <- lapply(mod_clinical_fdr, function(val){
-  return(list(epi=val[, 1:24], stroma=val[,25:46]))
+  return(list(epi=val[, 1:23], stroma=val[,24:44]))
 })
 
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(mod_clinical_fdr, file="../mixtData/data/mod_clinical_fdr.RData")
+save(mod_clinical_fdr, file="../../mixtData/data/mod_clinical_fdr.RData")
 ```
 ```{r, echo=FALSE}
 load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/mod_clinical_fdr.RData")))
@@ -388,8 +388,8 @@ head(mod_clinical_fdr$all)
 ```
 
 ## 5. Investigating gene overlap between gene sets across tissues
-Fisher exact test can be used to test the significance of gene overlap between 
-modules. 
+We first exclude genes that are not present in both tissue and check significance of overlap 
+between modules across tissue using a Fisher exact test. 
 
 ```{r}
 overlapFun <- function (labels1, labels2)
@@ -425,7 +425,14 @@ overlapFun <- function (labels1, labels2)
     list(countTable = countMat, pTable = pMat)
 }
 
-gene.set.overlap <-  overlapFun(moduleColors[[1]], moduleColors[[2]])
+str(moduleColors)
+
+modColors <- list()
+modColors$epi <- moduleColors$epi[names(moduleColors$epi) %in% names(moduleColors$stroma)]
+modColors$stroma <- moduleColors$stroma[names(moduleColors$stroma) %in% names(moduleColors$epi)]
+str(modColors)
+
+gene.set.overlap <-  overlapFun(modColors[[1]], modColors[[2]])
 str(gene.set.overlap)
 
 ```
@@ -463,7 +470,7 @@ perm_cor_p$stroma2 <- stat.ranksum (mixt.ranksum = bresat,
                                        nRuns = 10000, mc.cores = 80)
 ```
 ```{r, echo=FALSE, eval=FALSE}
-save(perm_cor_p, file="../mixtData/data/perm_cor_p.RData")
+save(perm_cor_p, file="../../mixtData/data/perm_cor_p.RData")
 ```
 ```{r, echo=FALSE}
 load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
