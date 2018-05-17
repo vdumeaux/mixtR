@@ -1,5 +1,5 @@
 ---
-title: "Introduction to mixt"
+title: "Introduction to mixtR"
 author: "Vanessa Dumeaux"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
