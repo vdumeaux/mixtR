@@ -1,0 +1,30 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+Analysis of Matched Interactions across Tissues
+===============================================
+
+The mixtR package (Matched Interactions across Tissues) contains the computational and statistical methods for identifying and exploring associations between sets of genes or molecular processes across tissues. Learn more in the vignette `Introduction to mixtR`.
+
+The web application framework is open sourced at <http://github.com/fjukstad/mixt> and use the mixtApp R wrapper package available at <https://github.com/vdumeaux/mixtApp>. Learn more in the vignette `MIxT web application`.
+
+Installation
+------------
+
+``` r
+# Install packages from GitHub
+devtools::install_github("vdumeaux/mixtR")
+devtools::install_github("vdumeaux/mixtApp")
+```
+
+References
+----------
+
+-   Dumeaux V, Fjukstad B, Lund E, Bongo LA, Hallett M. MIxT: Matched Interaction Across Tissue analysis and visualization (manuscript).
+-   Dumeaux V, Fjukstad B, Fjosne HE, Frantzen J-O, Holmen MM, Rodegerdts E, Schlichting E, Børresen-Dale AL, Bongo LA, Lund E, Hallett M (2017) [Interactions between the tumor and the blood systemic response of breast cancer patients](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005680). PLoS Comput Biol 13(9): e1005680.
+-   Fjukstad B, Dumeaux V, Olsen KS, Lund E, Hallett M, and Bongo LA (2017). [Building Applications for Interactive Data Exploration in Systems Biology](https://dl.acm.org/citation.cfm?id=3107481). In Proceedings of the 8th ACM International Conference on Bioinformatics, Computational Biology, and Health Informatics (Boston, Massachusetts, USA: ACM), pp. 556-561.
+
+Live website
+------------
+
+-   [Tumor and blood transcriptional profiles from breast cancer patients](http://mixt-blood-tumor.bci.mcgill.ca/)
+-   [Tumor and stroma transcriptional profiles from breast cancer patients](http://mixt-tumor-stroma.bci.mcgill.ca/)
