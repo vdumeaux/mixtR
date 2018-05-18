@@ -9,7 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# MIxT web application
 The MIxT web application is designed for exploring the results from the MIxT
 analysis comparing transcriptional profiles from two matched tissues across
 individuals. 
@@ -19,13 +18,12 @@ application please refer to
 ["Building Applications For Interactive Data Exploration In Systems Biology" by Fjukstad et al.](biorxiv.org/content/early/2017/05/24/141630) 
 and the source code [here](https://github.com/fjukstad/mixt). 
 
-# New Data 
-The [mixtApp](https://github.com/vdumeaux/mixtApp) R package provides data and
-analyses of transcriptional profiles for the web application. 
+# The mixtApp package 
+To build the MIxT web application, your will need the [mixtApp](https://github.com/vdumeaux/mixtApp), a wrapper package  calling the mixtR functions and storing pre-computed 
+data objects. 
 
-If you want to modify the data being used in the web application you can
-rebuild the mixtApp package yourself, and start the different services
-manually.
+If you want to modify the data, you can
+easily rebuild the web application as follow.
 
 First clone down the  [mixtApp](https://github.com/vdumeaux/mixtApp)
 repository: 
@@ -34,19 +32,22 @@ repository:
 $ git clone https://github.com/vdumeaux/mixtApp.git
 ```
 
-Then `cd` into the `mixtApp` directory and add a few pre-computed data outputs 
-you obtained from the mixtR package to the `data/` folder.
-One option to replace the data is to modify the 
-data url in `data-raw/datasets.R` and run the following:
+Then `cd` into the `mixtApp` directory and add the pre-computed data outputs 
+you obtained from the mixtR package in the `data/` folder.
+To save the data objects, you can modify the 
+data url in `data-raw/datasets.R` and run the script:
 ```
 $ R -f data-raw/datasets.R
 ```
-You then need to to rebuild the mixtApp package containing the new data using
+You can also replace the data objects manually. Please make sure that the objects
+name and format match the description detailed in the mixtR vignette.
+
+You then need to rebuild the mixtApp package containing the new data using
 ```
 $ R CMD INSTALL .
 ```
 
-Next up is building the container with your new mixtApp package.
+Next up is building the docker container with your new mixtApp package.
 
 Still in the `mixtApp/` directory, run: 
 ```
