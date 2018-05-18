@@ -4,7 +4,7 @@ author: "Vanessa Dumeaux"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{mixtR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,11 +21,11 @@ expression of a set of genes of interest
 association between gene sets of interest across tissues.
 
 The mixtR package also offers ad-hoc plotting functions (`cohort_heatmap`, 
-`cohort_scatterplot`, `cohort_boxplot`).
+`cohort_scatterplot`, `cohort_boxplot`) for visualization of the results.
 
 If the user wants to build a web application to explore/disseminate the results, 
-the outputs should be saved in the `/data` folder of the R package as described
-below. Instructions to build the web application are described in the MIxT web
+the outputs should be saved in the `/data` folder of the [mixtApp](https://github.com/vdumeaux/mixtApp) R package.
+Instructions to build the web application are described in the MIxT web
 application vignette.
 
 First load the mixtR package in your R session.
@@ -47,10 +47,10 @@ for(i in 1:length(files)){
 }
 ```
 
-Expression and clinical data from matched tissues  were formatted so that they 
+Expression and clinical data from matched tissues were formatted so that they 
 are contained in a list named `dat`. 
 
-Each object of the list must include the following objects:
+Each object of the list must include the following objects for each tissue:
 * `exprs` an expression matrix with m genes in rows and n patients in columns. 
 Rownames of `exprs` are the same gene identifiers as the one used to define gene sets.
 * `cohorts` list of patients subgroups. If you have only one , the vector
@@ -70,32 +70,34 @@ str(dat)
 
 `moduleColors` is a list of length 2: each object is a named vector of gene set 
 appartenance for each tissue. In our example, each gene is part of a module 
-grouping strongly co-expressed genes together as computed by WGCNA R package. It could be groups of genes 
-involved in different pathways/molecular processes.
+grouping strongly co-expressed genes together as computed by WGCNA R package.
+Other clustering approaches could replace this step. In general any approach 
+that moves the focus from a single gene to a “gene set” could suffice; eg it 
+could be groups of genes involved in different pathways/molecular processes.
 ```{r}
 str(moduleColors)
 ```
 
-You can import the top node and edges for each netwrok that you can vizualize in Cytoscape or in the MIxT web application
+IF you work with gene networks, you can import the top node and edges 
+for each network that you can vizualize in the MIxT web application. 
 ```{r}
 load(url("https://rawgit.com/vdumeaux/mixtData/master/data/TOM_net.RData"))
 str(TOM_net)
 ```
 
-
 ## 2. Patient linear ordering and region of independence
  
 `sig.ranksum()` allows you to map 𝑛 samples to a linear ordering based on
-expression of 𝑘 genes within a given gene se
+expression of 𝑘 genes within a given gene set/module.
 
 If you know the directionality of gene expression, the gene set of interest can
 be split between the `up` and `dn` genes. 
 If you do not know the directionality of gene expression, all genes in the gene
-set are listed in the `ns`. In this case, genes will be partitioned into two 
+set are listed in the `ns` argument. In this case, genes will be partitioned into two 
 groups around myeloids using correlation as the distance metric.
 
 The patient ordering is then partition in three categories (high, mid, low) 
-following a random sampling procedure (n =10,000). By default, the region of 
+following a random sampling procedure (eg `n` = 10,000). By default, the region of 
 independence (ROI) is determined by the 0.025 and 0.975 percentile point of 
 the distribution of random patient ranks (middle.range = 0.95).Both `n` and 
 `middle.range` can be set differently.
@@ -139,12 +141,20 @@ cohort_heatmap(mixt.dat = dat, mixt.ranksum = bresat, tissue = "epi",
 ```
 
 ## 3. Functional enrichment
-The MSigDB database from the Broad institute provides multiple collections of
-gene sets that can be used to functionally annotate the transcriptional modules.
+The MSigDB database from the Broad Institute provides multiple collections of
+gene sets that can be used to functionally annotate the gene modules in each
+tissue.
+Enrichment for each gene signature is estimated for all genes in each module and 
+separately for genes that are positively (red genes up) or negatively (blue genes dn)
+correlated with the patient ranksum in each cohort using the hypergeometric 
+minimum-likelihood P-values,computed with the function ‘dhyper’
+(equivalent to one-sided Fisher exact test). 
+P-values can then adjusted for multiple testing choosing `p.adjust.method`
+(see ?stats::p.adjust to review methods available).
 
 MSigDB cannot be accessed without a free registration, so the first things
 you'll need to do is download the .gmt files using the MSigDB page and save it
-in a folder within yoru working directory named `extdata` for example.
+in a folder named `extdata` for example.
 
 `read.gmt.msigdb()` will import your .gmt files in your working
 environment as follow
@@ -233,8 +243,8 @@ write.table(epi.msig, file = "../output/epi.msig.txt", sep="\t", col.names = T, 
 write.table(stroma.msig, file = "../output/stroma.msig.txt", sep="\t", col.names = T, quote = FALSE)
 ```
 
-We also annotate gene sets/modules based on gene ontology (GO) enrichment, 
-for example  using the R topGO package.
+We also can annotate gene sets/modules based on gene ontology (GO) enrichment, 
+for example using the R topGO package.
 ```{r, eval=FALSE}
 library(topGO)
 library(org.Hs.eg.db)
@@ -319,9 +329,15 @@ in each tissue are differentially expressed according to patient’s
 clinicopathological variables. The type of the clinicopathological attribute 
 (categorical or continuous) determines the underlying statistical test. 
 Pearson correlation (Student asymptotic p-value) is used to test association 
-between between a given module and continuous patient attributes (eg. age). 
+between a given module and continuous patient attributes (eg. age). 
 Analysis of Variance (ANOVA) is used to test association between a given module
 and categorical patient attributes (eg. ER status). 
+
+Significance of the associations is computated using permutations.
+To determine association between modules within a given subtype, we first 
+stratify on subtypes and then rerun the MIxT procedure: 
+(i) computation of ranksums in each module, (ii) calculation of the association test
+and (iii) permutations to estimate significance of associations.
 
 ```{r, eval=FALSE}
 epi.clinical.assoc <- lapply(names(dat$epi$cohorts), function(cohort.name) {
@@ -347,7 +363,8 @@ emp.p <- list()
 
 emp.p <- NULL
 for (cohort.name in names(dat$epi$cohorts)){
-  emp.p[[cohort.name]] <- cbind(epi.clinical.assoc[[cohort.name]], stroma.clinical.assoc[[cohort.name]])
+  emp.p[[cohort.name]] <- cbind(epi.clinical.assoc[[cohort.name]], 
+                                stroma.clinical.assoc[[cohort.name]])
 }
 
 ### Families of tests
@@ -362,10 +379,12 @@ mod_clinical_fdr <- lapply(emp.p, function(p.dat){
       matrix(p.adjust(p.dat[rownames(p.dat) %in% gpx, ], method="BH"), 
              nrow=length(which(rownames(p.dat) %in% gpx)), 
              ncol = ncol(p.dat),
-             dimnames = list(rownames(p.dat)[rownames(p.dat) %in% gpx], colnames(p.dat))
+             dimnames = list(rownames(p.dat)[rownames(p.dat) %in% gpx], 
+                             colnames(p.dat))
              )
     }))
-  ret <- rbind(ret, t(apply(p.dat[rownames(p.dat) %in% singles, ], 1, p.adjust, method="BH")))
+  ret <- rbind(ret, t(apply(p.dat[rownames(p.dat) %in% singles, ], 1, 
+                            p.adjust, method="BH")))
   return(ret)
 })
 
