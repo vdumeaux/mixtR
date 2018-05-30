@@ -27,7 +27,7 @@ If the user wants to build a web application to explore/disseminate the results,
 the outputs should be saved in the `/data` folder of the [mixtApp](https://github.com/vdumeaux/mixtApp) R package.
 Instructions to build the web application are described in the MIxT web
 application vignette.
-
+ 
 First load the mixtR package in your R session.
 ```{r}
 library(mixtR)
@@ -35,8 +35,9 @@ library(mixtR)
 
 ## 1. Input data format 
 
-In this vignette, we are taking the example of gene expression profiles from microdissected epithelium 
-and stroma from non-inflammatory invasive breast tumors from boersma et al.
+In this vignette, we are taking the example of gene expression profiles from microdissected epithelium and stroma from non-inflammatory invasive breast tumors from boersma et al.
+
+Those data are stored in the `/data` folder of the [mixtApp](https://github.com/vdumeaux/mixtApp) R package and are accessed through [RawGit](https://rawgit.com/) that provides a static reference to the files.
 ```{r}
 files= c("dat.rda", "moduleColors.rda")
 dataDir <- 'https://rawgit.com/vdumeaux/mixtApp/master/data/'
