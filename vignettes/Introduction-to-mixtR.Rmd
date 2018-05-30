@@ -38,8 +38,8 @@ library(mixtR)
 In this vignette, we are taking the example of gene expression profiles from microdissected epithelium 
 and stroma from non-inflammatory invasive breast tumors from boersma et al.
 ```{r}
-files= c("dat.RData", "moduleColors.RData")
-dataDir <- 'https://rawgit.com/vdumeaux/mixtData/master/data/'
+files= c("dat.rda", "moduleColors.rda")
+dataDir <- 'https://rawgit.com/vdumeaux/mixtApp/master/data/'
 files.dir=paste0(dataDir,files)
 
 for(i in 1:length(files)){
@@ -81,8 +81,8 @@ str(moduleColors)
 IF you work with gene networks, you can import the top node and edges 
 for each network that you can vizualize in the MIxT web application. 
 ```{r}
-load(url("https://rawgit.com/vdumeaux/mixtData/master/data/TOM_net.RData"))
-str(TOM_net)
+load(url("https://rawgit.com/vdumeaux/mixtApp/master/data/net.rda"))
+str(net)
 ```
 
 ## 2. Patient linear ordering and region of independence
@@ -123,10 +123,10 @@ bresat$stroma <- lapply(gene.sets$stroma, function (mod){
                  n=10000, mc.cores = 2)})
 ```
 ```{r, echo=FALSE, eval=FALSE}
-save(bresat, file = "../../mixtData/data/bresat.RData")
+save(bresat, file = "../../mixtApp/data/bresat.rda")
 ```
 ```{r, echo=FALSE}
-load(url("https://rawgit.com/vdumeaux/mixtData/master/data/bresat.RData"))
+load(url("https://rawgit.com/vdumeaux/mixtApp/master/data/bresat.rda"))
 ```
 ```{r}
 names(bresat$epi)
@@ -180,19 +180,19 @@ sig<-list()
 sig$all.sig<-c(msigdb$h.all, msigdb$c1.all, msigdb$c2.cp, msigdb$c2.cgp)
 
 sig$set<-c(rep("h", length(msigdb$h.all)),
-           rep("c1", length(msigdb$c1.all))
- ,          rep("c2.cp", length(msigdb$c2.cp)),
+           rep("c1", length(msigdb$c1.all)),
+           rep("c2.cp", length(msigdb$c2.cp)),
            rep("c2.cgp", length(msigdb$c2.cgp)))
 
-msigdb_enrichment <- list()
-msigdb_enrichment$epi<- functional.enrichment(mixt.ranksum = bresat,
+msigdb.enrichment <- list()
+msigdb.enrichment$epi<- functional.enrichment(mixt.ranksum = bresat,
                                               tissue="epi",
                                               cohort.name = "ern",
                                               functional.groups = sig,
                                               p.adjust.method = "BH",
                                               mc.cores=80)
 
-msigdb_enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
+msigdb.enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
                                                  tissue="stroma",
                                                  cohort.name = "ern",
                                                  functional.groups = sig,
@@ -201,22 +201,22 @@ msigdb_enrichment$stroma<- functional.enrichment(mixt.ranksum = bresat,
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(msigdb_enrichment, file = "../../mixtData/data/msigdb_enrichment.RData")
+save(msigdb.enrichment, file = "../../mixtApp/data/msigdb.enrichment.rda")
 ```
 
 ```{r, echo=FALSE}
-load(url("https://rawgit.com/vdumeaux/mixtData/master/data/msigdb_enrichment.RData"))
+load(url("https://rawgit.com/vdumeaux/mixtApp/master/data/msigdb.enrichment.rda"))
 ```
   
 ```{r}
 library(plyr)
 
 tissue.names<-c("epi", "stroma")
-set<-levels(factor(msigdb_enrichment$epi$turquoise$results$sig.set))
+set<-levels(factor(msigdb.enrichment$epi$turquoise$results$sig.set))
 
 results<-list()
 for (tissue in tissue.names){
-results[[tissue]]<-lapply(msigdb_enrichment[[tissue]], function(x) x$results)
+results[[tissue]]<-lapply(msigdb.enrichment[[tissue]], function(x) x$results)
 }
 
 msig.results<-list()
@@ -316,11 +316,11 @@ write.table(stroma.goterms, file = "stroma.goterms.txt", sep="\t", col.names = T
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(goterms, file = "../../mixtData/data/goterms.RData")
+save(goterms, file = "../../mixtApp/data/goterms.RData")
 ```
 
 ```{r, echo=FALSE}
-load(url("https://rawgit.com/vdumeaux/mixtData/master/data/goterms.RData"))
+load(url("https://rawgit.com/vdumeaux/mixtApp/master/data/goterms.rda"))
 ```
   
 # 4. Association between gene sets and clinical variables
@@ -396,10 +396,10 @@ mod_clinical_fdr <- lapply(mod_clinical_fdr, function(val){
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-save(mod_clinical_fdr, file="../../mixtData/data/mod_clinical_fdr.RData")
+save(mod_clinical_fdr, file="../../mixtApp/data/mod_clinical_fdr.RData")
 ```
 ```{r, echo=FALSE}
-load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/mod_clinical_fdr.RData")))
+load(url(("https://rawgit.com/vdumeaux/mixtApp/master/data/mod_clinical_fdr.rda")))
 ```
 ```{r}
 str(mod_clinical_fdr)
@@ -489,10 +489,10 @@ perm_cor_p$stroma2 <- stat.ranksum (mixt.ranksum = bresat,
                                        nRuns = 10000, mc.cores = 80)
 ```
 ```{r, echo=FALSE, eval=FALSE}
-save(perm_cor_p, file="../../mixtData/data/perm_cor_p.RData")
+save(perm_cor_p, file="../../mixtApp/data/perm_cor_p.rda")
 ```
 ```{r, echo=FALSE}
-load(url(("https://rawgit.com/vdumeaux/mixtData/master/data/perm_cor_p.RData")))
+load(url(("https://rawgit.com/vdumeaux/mixtApp/master/data/perm_cor_p.rda")))
 ```
 Gene sets from tissue 1 (`epi`) are in row and gene sets from tissue 2 
 (`stroma`) are in column.
