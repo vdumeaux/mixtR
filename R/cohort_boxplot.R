@@ -12,24 +12,24 @@ cohort_boxplot <- function(mixt.ranksum, tissue, module, cohort.name = "all",
                            orderByTissue=NULL, orderByModule=NULL) {
 
 
-  if (!tissue %in% names(mixt.ranksum))
-    stop ("tissue should be a name of mixt.ranksum")
-  if (!module %in% names(mixt.ranksum[[tissue]]))
-    stop ("ranksums were not computed for module in this tissue")
-  if (!cohort.name %in% names(mixt.ranksum[[tissue]][[module]]))
-    stop ("ranksums were not computed for this cohort")
-  if (!is.null(orderByTissue) & !orderByTissue %in% names(mixt.ranksum))
-    stop ("orderByTissue should be a name of mixt.ranksum")
-  if (!is.null(orderByModule) & !orderByModule %in% names(mixt.ranksum[[orderByTissue]]))
-    stop ("ranksums were not computed for orderByModule")
-
-
+  
   if (is.null(orderByModule)) {
     orderByModule <-  module
   }
   if (is.null(orderByTissue)) {
     orderByTissue <- tissue
   }
+  
+  if (!tissue %in% names(mixt.ranksum))
+    stop ("tissue should be a name of mixt.ranksum")
+  if (!module %in% names(mixt.ranksum[[tissue]]))
+    stop ("ranksums were not computed for module in this tissue")
+  if (!cohort.name %in% names(mixt.ranksum[[tissue]][[module]]))
+    stop ("ranksums were not computed for this cohort")
+  if (!orderByTissue %in% names(mixt.ranksum))
+    stop ("orderByTissue should be a name of mixt.ranksum")
+  if (!orderByModule %in% names(mixt.ranksum[[orderByTissue]]))
+    stop ("ranksums were not computed for orderByModule")
 
   bs.order.by <- mixt.ranksum[[orderByTissue]][[orderByModule]][[cohort.name]]
   roi.cat <- mixt.ranksum[[orderByTissue]][[orderByModule]][[cohort.name]]$roi.cat
